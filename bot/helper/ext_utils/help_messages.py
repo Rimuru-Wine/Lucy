@@ -266,12 +266,6 @@ Apply custom metadata to media files using pipe (|) separator.
 • <code>{sublang}</code> - Subtitle language (auto-detected or none)
 • <code>{year}</code> - Year extracted from filename
 
-<b>Per-Stream Metadata:</b>
-Set different metadata for audio/video/subtitle streams in User Settings > FFmpeg Settings:
-• <b>Audio Metadata:</b> Applied to each audio stream
-• <b>Video Metadata:</b> Applied to video streams  
-• <b>Subtitle Metadata:</b> Applied to subtitle streams
-
 <b>Examples:</b>
 <code>/mirror link -meta title=My Movie|artist={audiolang} Version</code>
 <code>/yt link -meta album={basename}|year={year}|genre=Action</code>
@@ -279,10 +273,7 @@ Set different metadata for audio/video/subtitle streams in User Settings > FFmpe
 <b>Escape Pipes:</b> Use <code>\\|</code> to include literal pipe in values:
 <code>title=Movie \\| Director's Cut</code>
 
-<b>User Settings Example:</b>
-• Audio Metadata: <code>language={audiolang}|title=Audio Track</code>
-• Video Metadata: <code>title={basename}|year={year}</code>
-• Subtitle Metadata: <code>language={sublang}|title=Subtitles</code>"""
+"""
 
 YT_HELP_DICT = {
     "main": yt,
