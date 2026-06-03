@@ -290,6 +290,31 @@ class TaskConfig:
 
         self.metadata_title = self.user_dict.get("METADATA")
 
+        if self.is_leech and (
+            self.user_dict.get("LEECH_METADATA")
+            or Config.LEECH_METADATA
+            and "LEECH_METADATA" not in self.user_dict
+        ):
+            for key, dict_name, tag in [
+                ("METADATA_TITLE", "metadata_dict", "title"),
+                ("METADATA_AUTHOR", "metadata_dict", "author"),
+                ("METADATA_ARTIST", "metadata_dict", "artist"),
+                ("METADATA_ENCODED_BY", "metadata_dict", "encoded_by"),
+                ("METADATA_COMMENT", "metadata_dict", "comment"),
+                ("METADATA_CUSTOM_TAG", "metadata_dict", "custom_tag"),
+                ("METADATA_VIDEO", "video_metadata_dict", "title"),
+                ("METADATA_AUDIO", "audio_metadata_dict", "title"),
+                ("METADATA_SUBTITLE", "subtitle_metadata_dict", "title"),
+            ]:
+                val = self.user_dict.get(key) or (
+                    getattr(Config, key) if key not in self.user_dict else ""
+                )
+                if val:
+                    if hasattr(self, dict_name):
+                        getattr(self, dict_name)[tag] = val
+                    elif dict_name == "metadata_dict":
+                        self.default_metadata_dict[tag] = val
+
         if not self.is_leech:
             self.stop_duplicate = (
                 self.user_dict.get("STOP_DUPLICATE")
