@@ -5,10 +5,10 @@ def get_version() -> str:
     :return: The version details in the format 'vMAJOR.MINOR.PATCH-STATE'
     :rtype: str
     """
-    MAJOR = "3"
+    MAJOR = "4"
     MINOR = "1"
     PATCH = "3"
-    STATE = "x"
+    STATE = "Lucy"
     return f"v{MAJOR}.{MINOR}.{PATCH}-{STATE}"
 
 
