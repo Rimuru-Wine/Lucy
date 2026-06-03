@@ -44,6 +44,17 @@ leech_options = [
     "LEECH_CAPTION",
     "THUMBNAIL_LAYOUT",
 ]
+metadata_options = [
+    "METADATA_TITLE",
+    "METADATA_AUTHOR",
+    "METADATA_ARTIST",
+    "METADATA_AUDIO",
+    "METADATA_SUBTITLE",
+    "METADATA_VIDEO",
+    "METADATA_ENCODED_BY",
+    "METADATA_CUSTOM_TAG",
+    "METADATA_COMMENT",
+]
 uphoster_options = [
     "GOFILE_TOKEN",
     "GOFILE_FOLDER_ID",
@@ -57,13 +68,6 @@ uphoster_options = [
 ]
 rclone_options = ["RCLONE_CONFIG", "RCLONE_PATH", "RCLONE_FLAGS"]
 gdrive_options = ["TOKEN_PICKLE", "GDRIVE_ID", "INDEX_URL"]
-ffset_options = [
-    "FFMPEG_CMDS",
-    "METADATA",
-    "AUDIO_METADATA",
-    "VIDEO_METADATA",
-    "SUBTITLE_METADATA",
-]
 advanced_options = [
     "EXCLUDED_EXTENSIONS",
     "NAME_SWAP",
@@ -312,6 +316,51 @@ Here I will explain how to use mltb.* which is reference to files you want to wo
         "VikingFile Folder Name",
         "<i>Send your VikingFile folder name/path. Leave empty to upload to root.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
+    "METADATA_TITLE": (
+        "String",
+        "Metadata Title. Example: Joined @WZML_X",
+        "<i>Send your Metadata Title.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_AUTHOR": (
+        "String",
+        "Metadata Author. Example: @WZML_X",
+        "<i>Send your Metadata Author.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_ARTIST": (
+        "String",
+        "Metadata Artist. Example: @WZML_X",
+        "<i>Send your Metadata Artist.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_AUDIO": (
+        "String",
+        "Metadata Audio Name. Example: English",
+        "<i>Send your Metadata Audio Name.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_SUBTITLE": (
+        "String",
+        "Metadata Subtitle Name. Example: English",
+        "<i>Send your Metadata Subtitle Name.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_VIDEO": (
+        "String",
+        "Metadata Video Name. Example: @WZML_X",
+        "<i>Send your Metadata Video Name.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_ENCODED_BY": (
+        "String",
+        "Metadata Encoded By. Example: @WZML_X",
+        "<i>Send your Metadata Encoded By.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_CUSTOM_TAG": (
+        "String",
+        "Metadata Custom Tag. Example: @WZML_X",
+        "<i>Send your Metadata Custom Tag.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
+    "METADATA_COMMENT": (
+        "String",
+        "Metadata Comment. Example: @WZML_X",
+        "<i>Send your Metadata Comment.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
+    ),
 }
 
 
@@ -330,7 +379,6 @@ async def get_user_settings(from_user, stype="main"):
         buttons.data_button("Mirror Settings", f"userset {user_id} mirror")
         buttons.data_button("Leech Settings", f"userset {user_id} leech")
         buttons.data_button("Uphoster Settings", f"userset {user_id} uphoster")
-        buttons.data_button("FF Media Settings", f"userset {user_id} ffset")
         buttons.data_button(
             "Mics Settings", f"userset {user_id} advanced", position="l_body"
         )
@@ -538,6 +586,8 @@ async def get_user_settings(from_user, stype="main"):
         else:
             thumb_layout = "None"
 
+        buttons.data_button("Leech Metadata", f"userset {user_id} metadata")
+
         buttons.data_button("Back", f"userset {user_id} back", "footer")
         buttons.data_button(
             "Close", f"userset {user_id} close", "footer", style=ButtonStyle.DANGER
@@ -559,6 +609,91 @@ async def get_user_settings(from_user, stype="main"):
 ┠ Leech by <b>{leech_method}</b> session
 ┠ Mixed Leech → <b>{hybrid_leech}</b>
 ┖ Thumbnail Layout → <b>{thumb_layout}</b>
+"""
+
+    elif stype == "metadata":
+        if (
+            user_dict.get("LEECH_METADATA", False)
+            or "LEECH_METADATA" not in user_dict
+            and Config.LEECH_METADATA
+        ):
+            buttons.data_button(
+                "Disable Metadata", f"userset {user_id} tog LEECH_METADATA f"
+            )
+            metadata_mode = "Enabled"
+        else:
+            buttons.data_button(
+                "Enable Metadata", f"userset {user_id} tog LEECH_METADATA t"
+            )
+            metadata_mode = "Disabled"
+
+        buttons.data_button("Title", f"userset {user_id} menu METADATA_TITLE")
+        buttons.data_button("Author", f"userset {user_id} menu METADATA_AUTHOR")
+        buttons.data_button("Artist", f"userset {user_id} menu METADATA_ARTIST")
+        buttons.data_button("Audio", f"userset {user_id} menu METADATA_AUDIO")
+        buttons.data_button("Subtitle", f"userset {user_id} menu METADATA_SUBTITLE")
+        buttons.data_button("Video", f"userset {user_id} menu METADATA_VIDEO")
+        buttons.data_button(
+            "Encoded By", f"userset {user_id} menu METADATA_ENCODED_BY"
+        )
+        buttons.data_button(
+            "Custom Tag", f"userset {user_id} menu METADATA_CUSTOM_TAG"
+        )
+        buttons.data_button("Comment", f"userset {user_id} menu METADATA_COMMENT")
+
+        buttons.data_button("Back", f"userset {user_id} back leech", "footer")
+        buttons.data_button(
+            "Close", f"userset {user_id} close", "footer", style=ButtonStyle.DANGER
+        )
+        btns = buttons.build_menu(2)
+
+        m_title = (
+            user_dict.get("METADATA_TITLE") or Config.METADATA_TITLE or "Not Exists"
+        )
+        m_author = (
+            user_dict.get("METADATA_AUTHOR") or Config.METADATA_AUTHOR or "Not Exists"
+        )
+        m_artist = (
+            user_dict.get("METADATA_ARTIST") or Config.METADATA_ARTIST or "Not Exists"
+        )
+        m_audio = (
+            user_dict.get("METADATA_AUDIO") or Config.METADATA_AUDIO or "Not Exists"
+        )
+        m_subtitle = (
+            user_dict.get("METADATA_SUBTITLE")
+            or Config.METADATA_SUBTITLE
+            or "Not Exists"
+        )
+        m_video = (
+            user_dict.get("METADATA_VIDEO") or Config.METADATA_VIDEO or "Not Exists"
+        )
+        m_encoded = (
+            user_dict.get("METADATA_ENCODED_BY")
+            or Config.METADATA_ENCODED_BY
+            or "Not Exists"
+        )
+        m_tag = (
+            user_dict.get("METADATA_CUSTOM_TAG")
+            or Config.METADATA_CUSTOM_TAG
+            or "Not Exists"
+        )
+        m_comment = (
+            user_dict.get("METADATA_COMMENT") or Config.METADATA_COMMENT or "Not Exists"
+        )
+
+        text = f"""⌬ <b>Leech Metadata Settings :</b>
+┟ <b>Name</b> → {user_name}
+┃
+┠ Metadata → <b>{metadata_mode}</b>
+┠ Title → <code>{escape(str(m_title))}</code>
+┠ Author → <code>{escape(str(m_author))}</code>
+┠ Artist → <code>{escape(str(m_artist))}</code>
+┠ Audio → <code>{escape(str(m_audio))}</code>
+┠ Subtitle → <code>{escape(str(m_subtitle))}</code>
+┠ Video → <code>{escape(str(m_video))}</code>
+┠ Encoded By → <code>{escape(str(m_encoded))}</code>
+┠ Custom Tag → <code>{escape(str(m_tag))}</code>
+┖ Comment → <code>{escape(str(m_comment))}</code>
 """
 
     elif stype == "uphoster":
@@ -839,83 +974,6 @@ async def get_user_settings(from_user, stype="main"):
 ┠ <b>Index Link</b> → <code>{index}</code>
 ┖ <b>Stop Duplicate</b> → <b>{sd_msg}</b>
 """
-
-    elif stype == "ffset":
-        buttons.data_button(
-            "FFmpeg Cmds", f"userset {user_id} menu FFMPEG_CMDS", "header"
-        )
-        if user_dict.get("FFMPEG_CMDS", False):
-            ffc = user_dict["FFMPEG_CMDS"]
-        elif "FFMPEG_CMDS" not in user_dict and Config.FFMPEG_CMDS:
-            ffc = Config.FFMPEG_CMDS
-        else:
-            ffc = "<b>Not Exists</b>"
-
-        if isinstance(ffc, dict):
-            ffc = "\n" + "\n".join(
-                [
-                    f"{no}. <b>{key}</b>: <code>{escape(str(value[0]))}</code>"
-                    for no, (key, value) in enumerate(ffc.items(), start=1)
-                ]
-            )
-
-        buttons.data_button("Metadata", f"userset {user_id} menu METADATA")
-        metadata_setting = user_dict.get("METADATA")
-        display_meta_val = "<b>Not Set</b>"
-        if isinstance(metadata_setting, dict) and metadata_setting:
-            display_meta_val = ", ".join(
-                f"{k}={escape(str(v))}" for k, v in metadata_setting.items()
-            )
-            display_meta_val = f"<code>{display_meta_val}</code>"
-        elif isinstance(metadata_setting, str) and metadata_setting:  # Legacy
-            display_meta_val = (
-                f"<code>{escape(metadata_setting)}</code> [<i>Legacy, needs re-set</i>]"
-            )
-
-        buttons.data_button("Audio Metadata", f"userset {user_id} menu AUDIO_METADATA")
-        audio_meta_setting = user_dict.get("AUDIO_METADATA")
-        display_audio_meta = "<b>Not Set</b>"
-        if isinstance(audio_meta_setting, dict) and audio_meta_setting:
-            display_audio_meta = ", ".join(
-                f"{k}={escape(str(v))}" for k, v in audio_meta_setting.items()
-            )
-            display_audio_meta = f"<code>{display_audio_meta}</code>"
-
-        buttons.data_button("Video Metadata", f"userset {user_id} menu VIDEO_METADATA")
-        video_meta_setting = user_dict.get("VIDEO_METADATA")
-        display_video_meta = "<b>Not Set</b>"
-        if isinstance(video_meta_setting, dict) and video_meta_setting:
-            display_video_meta = ", ".join(
-                f"{k}={escape(str(v))}" for k, v in video_meta_setting.items()
-            )
-            display_video_meta = f"<code>{display_video_meta}</code>"
-
-        buttons.data_button(
-            "Subtitle Metadata", f"userset {user_id} menu SUBTITLE_METADATA"
-        )
-        subtitle_meta_setting = user_dict.get("SUBTITLE_METADATA")
-        display_subtitle_meta = "<b>Not Set</b>"
-        if isinstance(subtitle_meta_setting, dict) and subtitle_meta_setting:
-            display_subtitle_meta = ", ".join(
-                f"{k}={escape(str(v))}" for k, v in subtitle_meta_setting.items()
-            )
-            display_subtitle_meta = f"<code>{display_subtitle_meta}</code>"
-
-        buttons.data_button("Back", f"userset {user_id} back", "footer")
-        buttons.data_button(
-            "Close", f"userset {user_id} close", "footer", style=ButtonStyle.DANGER
-        )
-        btns = buttons.build_menu(2)
-
-        text = f"""⌬ <b>FF Settings :</b>
-┟ <b>Name</b> → {user_name}
-┃
-┠ <b>FFmpeg CLI Commands</b> → {ffc}
-┃
-┠ <b>Default Metadata</b> → {display_meta_val}
-┠ <b>Audio Metadata</b> → {display_audio_meta}
-┠ <b>Video Metadata</b> → {display_video_meta}
-┖ <b>Subtitle Metadata</b> → {display_subtitle_meta}"""
 
     elif stype == "advanced":
         buttons.data_button(
@@ -1242,14 +1300,14 @@ async def get_menu(option, message, user_id):
             buttons.data_button("Remove", f"userset {user_id} remove {option}")
     if option in leech_options:
         back_to = "leech"
+    elif option in metadata_options:
+        back_to = "metadata"
     elif option in rclone_options:
         back_to = "rclone"
     elif option in gdrive_options:
         back_to = "gdrive"
     elif option in yt_options:
         back_to = "yttools"
-    elif option in ffset_options:
-        back_to = "ffset"
     elif option in advanced_options:
         back_to = "advanced"
     else:
@@ -1377,7 +1435,7 @@ async def edit_user_settings(client, query):
         "pixeldrain",
         "devuploads",
         "vikingfile",
-        "ffset",
+        "metadata",
         "advanced",
         "gdrive",
         "rclone",
@@ -1444,6 +1502,8 @@ async def edit_user_settings(client, query):
             back_to = "gdrive"
         elif data[3] in ["USER_TOKENS", "USE_DEFAULT_COOKIE"]:
             back_to = "general"
+        elif data[3] == "LEECH_METADATA":
+            back_to = "metadata"
         else:
             back_to = "leech"
         await update_user_settings(query, stype=back_to)
