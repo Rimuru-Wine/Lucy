@@ -249,6 +249,7 @@ class TaskListener(TaskConfig):
                 getattr(self, "metadata_dict", {}),
                 getattr(self, "audio_metadata_dict", {}),
                 getattr(self, "video_metadata_dict", {}),
+                getattr(self, "subtitle_metadata_dict", {}),
             )
             if self.is_cancelled:
                 return
