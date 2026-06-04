@@ -38,6 +38,14 @@ from .stats import bot_stats, stats_pages, get_packages_version
 from .status import task_status, status_pages
 from .users_settings import get_users_settings, edit_user_settings, send_user_settings
 from .ytdlp import ytdl, ytdl_leech
+from ..Jack.poster import (
+    get_poster_menu,
+    handle_back_to_search,
+    show_poster_categories,
+    handle_poster_viewer,
+    ignore_callback,
+    close_callback,
+)
 
 __all__ = [
     "send_bot_settings",
@@ -103,4 +111,10 @@ __all__ = [
     "send_user_settings",
     "ytdl",
     "ytdl_leech",
+    "get_poster_menu",
+    "handle_back_to_search",
+    "show_poster_categories",
+    "handle_poster_viewer",
+    "ignore_callback",
+    "close_callback",
 ]
