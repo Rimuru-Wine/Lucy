@@ -1,5 +1,6 @@
 from pyrogram.filters import create
 from pyrogram.enums import ChatType
+from pyrogram.types import CallbackQuery
 
 from ... import auth_chats, sudo_users, user_data
 from ...core.config_manager import Config
@@ -8,15 +9,17 @@ from .tg_utils import chat_info
 
 class CustomFilters:
     async def owner_filter(self, _, update):
-        user = update.from_user or update.sender_chat
+        msg = update.message if isinstance(update, CallbackQuery) else update
+        user = update.from_user or msg.sender_chat
         return user.id == Config.OWNER_ID
 
     owner = create(owner_filter)
 
     async def authorized_user(self, _, update):
-        uid = (update.from_user or update.sender_chat).id
-        chat_id = update.chat.id
-        thread_id = update.message_thread_id if update.is_topic_message else None
+        msg = update.message if isinstance(update, CallbackQuery) else update
+        uid = (update.from_user or msg.sender_chat).id
+        chat_id = msg.chat.id
+        thread_id = msg.message_thread_id if msg.is_topic_message else None
         return bool(
             uid == Config.OWNER_ID
             or (
@@ -48,11 +51,12 @@ class CustomFilters:
     authorized = create(authorized_user)
 
     async def authorized_usetting(self, _, update):
-        uid = (update.from_user or update.sender_chat).id
+        msg = update.message if isinstance(update, CallbackQuery) else update
+        uid = (update.from_user or msg.sender_chat).id
         is_exists = False
         if await CustomFilters.authorized("", update):
             is_exists = True
-        elif update.chat.type == ChatType.PRIVATE:
+        elif msg.chat.type == ChatType.PRIVATE:
             for channel_id in user_data:
                 if not (
                     user_data[channel_id].get("is_auth")
@@ -70,7 +74,8 @@ class CustomFilters:
     authorized_uset = create(authorized_usetting)
 
     async def sudo_user(self, _, update):
-        user = update.from_user or update.sender_chat
+        msg = update.message if isinstance(update, CallbackQuery) else update
+        user = update.from_user or msg.sender_chat
         uid = user.id
         return bool(
             uid == Config.OWNER_ID
