@@ -15,6 +15,7 @@ from ..helper.ext_utils.bot_utils import new_task, update_user_ldata
 from ..helper.ext_utils.links_utils import decode_slink
 from ..helper.ext_utils.status_utils import get_readable_time
 from ..helper.ext_utils.db_handler import database
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.languages import Language
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.button_build import ButtonMaker
@@ -28,17 +29,23 @@ from ..helper.telegram_helper.message_utils import (
 )
 
 
+async def get_start_message(update, user_id):
+    if await CustomFilters.authorized(None, update):
+        msg = SFMLStyle.ST_MSG
+    elif Config.BOT_PM:
+        msg = SFMLStyle.ST_BOTPM
+    else:
+        msg = SFMLStyle.ST_UNAUTH
+    mention = update.from_user.mention
+    msg = msg.format(mention=mention, help_command=f"/{BotCommands.HelpCommand[0]}")
+    buttons = ButtonMaker()
+    buttons.data_button(SFMLStyle.ABOUT_BT, "start about")
+    return msg, buttons.build_menu(1)
+
+
 @new_task
 async def start(_, message):
     userid = message.from_user.id
-    lang = Language()
-    buttons = ButtonMaker()
-    buttons.url_button(
-        lang.START_BUTTON1, "https://www.github.com/SilentDemonSD/WZML-X"
-    )
-    buttons.url_button(lang.START_BUTTON2, "https://t.me/WZML_X")
-    reply_markup = buttons.build_menu(2)
-
     if len(message.command) > 1 and message.command[1] == "wzmlx":
         await delete_message(message)
     elif len(message.command) > 1 and message.command[1] != "start":
@@ -74,6 +81,7 @@ async def start(_, message):
                     message,
                     "<b>Bot Already Logged In via Password</b>\n\n<i>No Need to Accept Temp Tokens.</i>",
                 )
+            buttons = ButtonMaker()
             buttons.data_button(
                 "Activate Access Token", f"start pass {input_token}", "header"
             )
@@ -86,53 +94,48 @@ async def start(_, message):
     ┖ <b>Validity:</b> {get_readable_time(int(Config.VERIFY_TIMEOUT))}"""
             return await send_message(message, msg, reply_markup)
 
-    if await CustomFilters.authorized(_, message):
-        start_string = lang.START_MSG.format(
-            cmd=BotCommands.HelpCommand[0],
-        )
-        await send_message(message, start_string, reply_markup)
-    elif Config.BOT_PM:
-        await send_message(
-            message,
-            "<i>Now, Bot will send you all your files and links here. Start Using Now...</i>",
-            reply_markup,
-        )
-    else:
-        await send_message(
-            message,
-            "<i>Bot can mirror/leech from links|tgfiles|torrents|nzb|rclone-cloud to any rclone cloud, Google Drive or to telegram.\n\n⚠️ You Are not authorized user! Deploy your own WZML-X bot</i>",
-            reply_markup,
-        )
+    msg, reply_markup = await get_start_message(message, userid)
+    await send_message(message, msg, reply_markup)
     await database.set_pm_users(userid)
 
 
 @new_task
 async def start_cb(_, query):
     user_id = query.from_user.id
-    input_token = query.data.split()[2]
-    data = user_data.get(user_id, {})
+    data = query.data.split()
+    if data[1] == "pass":
+        input_token = data[2]
+        udata = user_data.get(user_id, {})
 
-    if input_token == "activated":
-        return await query.answer("Already Activated!", show_alert=True)
-    elif "VERIFY_TOKEN" not in data or data["VERIFY_TOKEN"] != input_token:
-        return await query.answer("Already Used, Generate New One", show_alert=True)
+        if input_token == "activated":
+            return await query.answer("Already Activated!", show_alert=True)
+        elif "VERIFY_TOKEN" not in udata or udata["VERIFY_TOKEN"] != input_token:
+            return await query.answer("Already Used, Generate New One", show_alert=True)
 
-    update_user_ldata(user_id, "VERIFY_TOKEN", str(uuid4()))
-    update_user_ldata(user_id, "VERIFY_TIME", time())
-    if Config.DATABASE_URL:
-        await database.update_user_data(user_id)
-    await query.answer("Activated Access Login Token!", show_alert=True)
+        update_user_ldata(user_id, "VERIFY_TOKEN", str(uuid4()))
+        update_user_ldata(user_id, "VERIFY_TIME", time())
+        if Config.DATABASE_URL:
+            await database.update_user_data(user_id)
+        await query.answer("Activated Access Login Token!", show_alert=True)
 
-    kb = query.message.reply_markup.inline_keyboard[1:]
-    kb.insert(
-        0,
-        [
-            InlineKeyboardButton(
-                "✅️ Activated ✅", callback_data="start pass activated"
-            )
-        ],
-    )
-    await edit_reply_markup(query.message, InlineKeyboardMarkup(kb))
+        kb = query.message.reply_markup.inline_keyboard[1:]
+        kb.insert(
+            0,
+            [
+                InlineKeyboardButton(
+                    "✅️ Activated ✅", callback_data="start pass activated"
+                )
+            ],
+        )
+        await edit_reply_markup(query.message, InlineKeyboardMarkup(kb))
+    elif data[1] == "about":
+        msg = SFMLStyle.ABOUT_MSG.format(mention=query.from_user.mention)
+        buttons = ButtonMaker()
+        buttons.data_button(SFMLStyle.BACK_BT, "start back")
+        await edit_message(query.message, msg, buttons.build_menu(1))
+    elif data[1] == "back":
+        msg, buttons = await get_start_message(query, user_id)
+        await edit_message(query.message, msg, buttons)
 
 
 @new_task
