@@ -52,7 +52,7 @@ async def restart_sessions(_, message):
 
 async def send_incomplete_task_message(cid, msg_id, msg):
     try:
-        if msg.startswith("⌬ <b><i>"):
+        if msg and msg.startswith("⌬ <b><i>"):
             await TgClient.bot.edit_message_text(
                 chat_id=cid,
                 message_id=msg_id,
