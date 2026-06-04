@@ -1,4 +1,3 @@
-# REQUIRED CONFIG
 BOT_TOKEN = ""
 OWNER_ID = 0
 TELEGRAM_API = 0
@@ -70,6 +69,15 @@ HYDRA_IP = ""
 HYDRA_API_KEY = ""
 
 # Media Search
+MDL_TEMPLATE = """<b>Title: </b> {title} [{aired_date}]
+<b>Also Known As:</b> {aka}
+<b>Rating ⭐️:</b> <i>{rating}</i>
+<b>Genre: </b>{genres}
+<b>MyDramaList URL:</b> {url}
+<b>Country : </b> {country}
+
+<b>Story Line: </b><code>{synopsis}</code>"""
+
 IMDB_TEMPLATE = """<b>Title: </b> {title} [{year}]
 <b>Also Known As:</b> {aka}
 <b>Rating ⭐️:</b> <i>{rating}</i>
