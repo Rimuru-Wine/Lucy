@@ -83,6 +83,14 @@ var_list = [
     "ABOUT_PIC",
     "SETTINGS_PIC",
     "TASK_PIC",
+    "METADATA_DUBBED_BY",
+    "METADATA_CHANNEL",
+    "METADATA_WEBSITE",
+    "METADATA_COPYRIGHT",
+    "METADATA_PUBLISHER",
+    "METADATA_ENCODER",
+    "METADATA_SOURCE",
+    "METADATA_STUDIO",
 ]
 auth_chats = {}
 excluded_extensions = ["aria2", "!qB"]
