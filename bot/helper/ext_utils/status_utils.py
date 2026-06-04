@@ -15,6 +15,7 @@ from ... import (
     task_dict_lock,
 )
 from ...core.config_manager import Config
+from ..ext_utils.style import SFMLStyle
 from ..telegram_helper.button_build import ButtonMaker
 
 SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -199,7 +200,7 @@ def get_progress_bar_string(pct):
     cFull = int(p // 8)
     p_str = "⬢" * cFull
     p_str += "⬡" * (12 - cFull)
-    return f"[{p_str}]"
+    return SFMLStyle.BAR.format(Bar=f"[{p_str}]")
 
 
 async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=1):
@@ -229,21 +230,22 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         else:
             tstatus = task.status()
         msg += f"<b>{index + start_position}.</b> "
-        msg += f"<b><i>{escape(f'{task.name()}')}</i></b>"
+        msg += SFMLStyle.STATUS_NAME.format(Name=escape(f"{task.name()}"))
         if task.listener.subname:
-            msg += f"\n┖ <b>Sub Name</b> → <i>{task.listener.subname}</i>"
+            msg += f"\n┖ <b>𝖲𝗎𝖻 𝖭𝖺𝗆𝖾</b> → <i>{task.listener.subname}</i>"
         elapsed = time() - task.listener.message.date.timestamp()
 
-        msg += f"\n\n<b>Task By {task.listener.message.from_user.mention(style='html')} </b> ( #ID{task.listener.message.from_user.id} )"
+        msg += SFMLStyle.USER.format(User=task.listener.message.from_user.mention(style='html'))
+        msg += SFMLStyle.ID.format(Id=task.listener.message.from_user.id)
         if task.listener.is_super_chat:
-            msg += f" <i>[<a href='{task.listener.message.link}'>Link</a>]</i>"
+            msg += f" <i>[<a href='{task.listener.message.link}'>𝖫𝗂𝗇𝗄</a>]</i>"
 
         if (
             tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
             and task.listener.progress
         ):
             progress = task.progress()
-            msg += f"\n┟ {get_progress_bar_string(progress)} <i>{progress}</i>"
+            msg += get_progress_bar_string(progress) + f" <i>{progress}</i>"
             if task.listener.subname:
                 subsize = f" / {get_readable_file_size(task.listener.subsize)}"
                 ac = len(task.listener.files_to_proceed)
@@ -251,55 +253,55 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             else:
                 subsize = ""
                 count = ""
-            msg += f"\n┠ <b>Processed</b> → <i>{task.processed_bytes()}{subsize} of {task.size()}</i>"
+            msg += SFMLStyle.PROCESSED.format(Processed=f"<i>{task.processed_bytes()}{subsize} 𝗈𝖿 {task.size()}</i>")
             if count:
-                msg += f"\n┠ <b>Count:</b> → <b>{count}</b>"
-            msg += f"\n┠ <b>Status</b> → <b>{tstatus}</b>"
-            msg += f"\n┠ <b>Speed</b> → <i>{task.speed()}</i>"
-            msg += f"\n┠ <b>Time</b> → <i>{task.eta()} of {get_readable_time(elapsed + get_raw_time(task.eta()))} ( {get_readable_time(elapsed)} )</i>"
+                msg += f"\n┠ <b>𝖢𝗈𝗎𝗇𝗍:</b> → <b>{count}</b>"
+            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url.startswith("http") else "")
+            msg += SFMLStyle.SPEED.format(Speed=task.speed())
+            msg += SFMLStyle.ETA.format(Eta=task.eta())
+            msg += SFMLStyle.ELAPSED.format(Elapsed=get_readable_time(elapsed))
             if tstatus == MirrorStatus.STATUS_DOWNLOAD and (
                 task.listener.is_torrent or task.listener.is_qbit
             ):
                 try:
-                    msg += f"\n┠ <b>Seeders</b> → {task.seeders_num()} | <b>Leechers</b> → {task.leechers_num()}"
+                    msg += f"\n┠ <b>𝖲𝖾𝖾𝖽𝖾𝗋𝗌</b> → {task.seeders_num()} | <b>𝖫𝖾𝖾𝖼𝗁𝖾𝗋𝗌</b> → {task.leechers_num()}"
                 except Exception:
                     pass
-            # TODO: Add Connected Peers
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += f"\n┠ <b>Size</b> → <i>{task.size()}</i> | <b>Uploaded</b>  → <i>{task.uploaded_bytes()}</i>"
-            msg += f"\n┠ <b>Status</b> → <b>{tstatus}</b>"
-            msg += f"\n┠ <b>Speed</b> → <i>{task.seed_speed()}</i>"
-            msg += f"\n┠ <b>Ratio</b> → <i>{task.ratio()}</i>"
-            msg += f"\n┠ <b>Time</b> → <i>{task.seeding_time()}</i> | <b>Elapsed</b> → <i>{get_readable_time(elapsed)}</i>"
+            msg += SFMLStyle.SEED_SIZE.format(Size=task.size())
+            msg += SFMLStyle.UPLOADED.format(Upload=task.uploaded_bytes())
+            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url.startswith("http") else "")
+            msg += SFMLStyle.SEED_SPEED.format(Speed=task.seed_speed())
+            msg += SFMLStyle.RATIO.format(Ratio=task.ratio())
+            msg += SFMLStyle.TIME.format(Time=task.seeding_time())
+            msg += SFMLStyle.ELAPSED.format(Elapsed=get_readable_time(elapsed))
         else:
-            msg += f"\n┠ <b>Size</b> → <i>{task.size()}</i>"
-        msg += f"\n┠ <b>Engine</b> → <i>{task.engine}</i>"
-        msg += f"\n┠ <b>In Mode</b> → <i>{task.listener.mode[0]}</i>"
-        msg += f"\n┠ <b>Out Mode</b> → <i>{task.listener.mode[1]}</i>"
-        # TODO: Add Bt Sel
+            msg += SFMLStyle.STATUS_SIZE.format(Size=task.size())
+        msg += SFMLStyle.NON_ENGINE.format(Engine=task.engine)
+        msg += SFMLStyle.STA_MODE.format(Mode=f"{task.listener.mode[0]} ➜ {task.listener.mode[1]}")
         from ..telegram_helper.bot_commands import BotCommands
 
-        msg += f"\n<b>┖ Stop</b> → <i>/{BotCommands.CancelTaskCommand[1]}_{task.gid()[:8]}</i>\n\n"
+        msg += SFMLStyle.CANCEL.format(Cancel=f"<b>𝖲𝗍𝗈𝗉</b> → <i>/{BotCommands.CancelTaskCommand[1]}_{task.gid()[:8]}</i>")
 
     if len(msg) == 0:
         if status == "All":
             return None, None
         else:
-            msg = f"No Active {status} Tasks!\n\n"
+            msg = f"𝖭𝗈 𝖠𝖼𝗍𝗂𝗏𝖾 {status} 𝖳𝖺𝗌𝗄𝗌!\n\n"
 
-    msg += "⌬ <b><u>Bot Stats</u></b>"
+    msg += SFMLStyle.FOOTER
     buttons = ButtonMaker()
     if not is_user:
         buttons.data_button(
-            "📜 TStats",
+            "📜 𝖳𝖲𝗍𝖺𝗍𝗌",
             f"status {sid} ov",
             position="header",
             style=ButtonStyle.PRIMARY,
         )
     if len(tasks) > STATUS_LIMIT:
-        msg += f"<b>Page:</b> {page_no}/{pages} | <b>Tasks:</b> {tasks_no} | <b>Step:</b> {page_step}\n"
-        buttons.data_button("<<", f"status {sid} pre", position="header")
-        buttons.data_button(">>", f"status {sid} nex", position="header")
+        msg += f"<b>𝖯𝖺𝗀𝖾:</b> {page_no}/{pages} | <b>𝖳𝖺𝗌𝗄𝗌:</b> {tasks_no} | <b>𝖲𝗍𝖾𝗉:</b> {page_step}\n"
+        buttons.data_button(SFMLStyle.PREVIOUS, f"status {sid} pre", position="header")
+        buttons.data_button(SFMLStyle.NEXT, f"status {sid} nex", position="header")
         if tasks_no > 30:
             for i in [1, 2, 4, 6, 8, 10, 15]:
                 buttons.data_button(i, f"status {sid} ps {i}", position="footer")
@@ -308,9 +310,11 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             if status_value != status:
                 buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button(
-        "♻️ Refresh", f"status {sid} ref", position="header", style=ButtonStyle.PRIMARY
+        "♻️ 𝖱𝖾𝖿𝗋𝖾𝗌𝗁", f"status {sid} ref", position="header", style=ButtonStyle.PRIMARY
     )
     button = buttons.build_menu(8)
-    msg += f"\n┟ <b>CPU</b> → {cpu_percent()}% | <b>F</b> → {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)} [{round(100 - disk_usage(DOWNLOAD_DIR).percent, 1)}%]"
-    msg += f"\n┖ <b>RAM</b> → {virtual_memory().percent}% | <b>UP</b> → {get_readable_time(time() - bot_start_time)}"
+    msg += SFMLStyle.CPU.format(cpu=cpu_percent())
+    msg += SFMLStyle.FREE.format(free=get_readable_file_size(disk_usage(DOWNLOAD_DIR).free), free_p=round(100 - disk_usage(DOWNLOAD_DIR).percent, 1))
+    msg += SFMLStyle.RAM.format(ram=virtual_memory().percent)
+    msg += SFMLStyle.UPTIME.format(uptime=get_readable_time(time() - bot_start_time))
     return msg, button
