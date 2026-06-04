@@ -11,6 +11,7 @@ from ...core.config_manager import Config
 from ...core.tg_client import TgClient
 from ..ext_utils.shortener_utils import short_url
 from ..ext_utils.status_utils import get_readable_time
+from ..ext_utils.style import SFMLStyle
 from .button_build import ButtonMaker
 
 
@@ -49,7 +50,7 @@ async def forcesub(message, ids, button=None):
     if join_button:
         if button is None:
             button = ButtonMaker()
-        _msg = "┠ Channel(s) pending to be joined, Join Now!"
+        _msg = SFMLStyle.FORCE_SUB_MSG
         for key, value in join_button.items():
             button.url_button(f"Join {key}", value, "footer")
     return _msg, button
@@ -69,7 +70,7 @@ async def check_botpm(message, button=None):
     except Exception:
         if button is None:
             button = ButtonMaker()
-        _msg = "┠ <i>Bot isn't Started in PM or Inbox (Private)</i>"
+        _msg = SFMLStyle.BOT_PM_MSG
         button.url_button(
             "Start Bot Now", f"https://t.me/{TgClient.BNAME}?start=start", "header"
         )
@@ -107,11 +108,11 @@ async def verify_token(user_id, button=None):
             button = ButtonMaker()
         encrypt_url = encode_slink(f"{token}&&{user_id}")
         button.url_button(
-            "Verify Access Token",
+            "𝖵𝖾𝗋𝗂𝖿𝗒 𝖠𝖼𝖼𝖾𝗌𝗌 𝖳𝗈𝗄𝖾𝗇",
             await short_url(f"https://t.me/{TgClient.BNAME}?start={encrypt_url}"),
         )
         return (
-            f"┠ <i>Verify Access Token has been expired,</i> Kindly validate a new access token to start using bot again.\n┃\n┖ <b>Validity :</b> <code>{get_readable_time(Config.VERIFY_TIMEOUT)}</code>",
+            SFMLStyle.VERIFY_MSG.format(validity=get_readable_time(Config.VERIFY_TIMEOUT)),
             button,
         )
     return None, button
