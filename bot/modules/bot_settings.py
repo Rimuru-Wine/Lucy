@@ -61,6 +61,14 @@ from .search import initiate_search_tools
 start = 0
 state = "view"
 handler_dict = {}
+THEME_VARS = [
+    "START_MESSAGE",
+    "ABOUT_TEXT",
+    "START_PIC",
+    "ABOUT_PIC",
+    "SETTINGS_PIC",
+    "TASK_PIC",
+]
 DEFAULT_VALUES = {
     "LEECH_SPLIT_SIZE": TgClient.MAX_SPLIT_SIZE,
     "RSS_DELAY": 600,
@@ -85,12 +93,14 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         buttons.data_button(SFMLStyle.ARIA_SET_BT, "botset aria")
         buttons.data_button(SFMLStyle.NZB_SET_BT, "botset nzb")
         buttons.data_button(SFMLStyle.SYNC_JD_BT, "botset syncjd")
+        buttons.data_button(SFMLStyle.THEME_SET_BT, "botset theme")
         buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
         msg = SFMLStyle.BOT_SET_BT + ":"
     elif edit_type is not None:
         if edit_type == "botvar":
             msg = ""
-            buttons.data_button(SFMLStyle.BACK_BT, "botset var")
+            return_key = "theme" if key in THEME_VARS else "var"
+            buttons.data_button(SFMLStyle.BACK_BT, f"botset {return_key}")
             if key not in ["TELEGRAM_HASH", "TELEGRAM_API", "OWNER_ID", "BOT_TOKEN"]:
                 buttons.data_button("𝖣𝖾𝖿𝖺𝗎𝗅𝗍", f"botset resetvar {key}")
             buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
@@ -136,6 +146,12 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 msg = "Send one server as dictionary {}, like in config.py without []. Timeout: 60 sec"
             else:
                 msg = f"Send a valid value for {key} in server {Config.USENET_SERVERS[index]['name']}. Current value is {Config.USENET_SERVERS[index][key]}. Timeout: 60 sec"
+    elif key == "theme":
+        for k in THEME_VARS:
+            buttons.data_button(k, f"botset botvar {k}")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset back")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
+        msg = SFMLStyle.THEME_SET_BT + ":"
     elif key == "var":
         conf_dict = Config.get_all()
         for k in list(conf_dict.keys())[start : 10 + start]:
@@ -267,7 +283,10 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
 
 async def update_buttons(message, key=None, edit_type=None, edit_mode=False):
     msg, button = await get_buttons(key, edit_type, edit_mode)
-    await edit_message(message, msg, button)
+    if not key and not edit_type and not edit_mode:
+        await edit_message(message, msg, button, photo=Config.SETTINGS_PIC)
+    else:
+        await edit_message(message, msg, button)
 
 
 @new_task
@@ -364,7 +383,8 @@ async def edit_variable(_, message, pre_message, key):
     elif value.startswith("{") and value.endswith("}"):
         value = eval(value)
     Config.set(key, value)
-    await update_buttons(pre_message, "var")
+    return_key = "theme" if key in THEME_VARS else "var"
+    await update_buttons(pre_message, return_key)
     await delete_message(message)
     await database.update_config({key: value})
     if key in ["SEARCH_PLUGINS", "SEARCH_API_LINK"]:
@@ -644,8 +664,9 @@ async def edit_bot_settings(client, query):
             show_alert=True,
         )
         await sync_jdownloader()
-    elif data[1] in ["var", "aria", "qbit", "nzb", "nzbserver"] or data[1].startswith(
-        "nzbser"
+    elif (
+        data[1] in ["var", "theme", "aria", "qbit", "nzb", "nzbserver"]
+        or data[1].startswith("nzbser")
     ):
         if data[1] == "nzbserver":
             globals()["start"] = 0
@@ -788,7 +809,8 @@ async def edit_bot_settings(client, query):
         await query.answer()
         await update_buttons(message, data[2], data[1])
         pfunc = partial(edit_variable, pre_message=message, key=data[2])
-        rfunc = partial(update_buttons, message, "var")
+        return_key = "theme" if data[2] in THEME_VARS else "var"
+        rfunc = partial(update_buttons, message, return_key)
         await event_handler(client, query, pfunc, rfunc)
     elif data[1] == "botvar" and state == "view":
         value = f"{Config.get(data[2])}"
@@ -914,7 +936,7 @@ async def send_bot_settings(_, message):
     handler_dict[message.chat.id] = False
     msg, button = await get_buttons()
     globals()["start"] = 0
-    await send_message(message, msg, button)
+    await send_message(message, msg, button, photo=Config.SETTINGS_PIC)
 
 
 async def load_config():
