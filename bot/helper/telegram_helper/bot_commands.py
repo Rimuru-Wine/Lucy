@@ -5,6 +5,7 @@ from ...core.plugin_manager import get_plugin_manager
 class BotCommands:
     StartCommand = "start"
     LoginCommand = "login"
+    MyDramaListCommand = "mdl"
 
     _static_commands = {
         "Mirror": ["mirror", "m"],
@@ -41,6 +42,7 @@ class BotCommands:
         "Exec": "exec",
         "ClearLocals": "clearlocals",
         "IMDB": "imdb",
+        "MyDramaList": "mdl",
         "Rss": "rss",
         "Authorize": ["authorize", "a"],
         "UnAuthorize": ["unauthorize", "ua"],
