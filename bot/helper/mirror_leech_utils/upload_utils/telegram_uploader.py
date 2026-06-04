@@ -36,6 +36,7 @@ from ....core.tg_client import TgClient
 from ...ext_utils.bot_utils import sync_to_async
 from ...ext_utils.files_utils import get_base_name, is_archive
 from ...ext_utils.status_utils import get_readable_file_size, get_readable_time
+from ...ext_utils.style import SFMLStyle
 from ...telegram_helper.message_utils import send_message
 from ...ext_utils.media_utils import (
     get_audio_thumbnail,
@@ -113,10 +114,16 @@ class TelegramUploader:
             msg_link = (
                 self._listener.message.link if self._listener.is_super_chat else ""
             )
-            msg = f"""➲ <b><u>Leech Started :</u></b>
-┃
-┠ <b>User :</b> {self._listener.user.mention} ( #ID{self._listener.user_id} ){f"\n┠ <b>Message Link :</b> <a href='{msg_link}'>Click Here</a>" if msg_link else ""}
-┖ <b>Source :</b> <a href='{self._listener.source_url}'>Click Here</a>"""
+            msg = SFMLStyle.L_LOG_START.format(
+                mention=self._listener.user.mention,
+                uid=self._listener.user_id,
+                msg_link=self._listener.source_url,
+            )
+            if msg_link:
+                msg = msg.replace(
+                    "\n┖",
+                    f"\n┠ <b>𝖬𝖾𝗌𝗌𝖺𝗀𝖾 𝖫𝗂𝗇𝗄 :</b> <a href='{msg_link}'>𝖢𝗅𝗂𝖼𝗄 𝖧𝖾𝗋𝖾</a>\n┖",
+                )
             try:
                 await TgClient.bot.resolve_peer(self._listener.up_dest)
                 self._log_msg = await TgClient.bot.send_message(
