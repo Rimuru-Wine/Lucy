@@ -41,6 +41,7 @@ from ..ext_utils.files_utils import (
 )
 from ..ext_utils.links_utils import is_gdrive_id
 from ..ext_utils.status_utils import get_readable_file_size, get_readable_time
+from ..ext_utils.style import SFMLStyle
 from ..ext_utils.task_manager import check_running_tasks, start_from_queued
 from ..mirror_leech_utils.uphoster_utils.multi_upload import MultiUphosterUpload
 from ..mirror_leech_utils.gdrive_utils.upload import GoogleDriveUpload
@@ -98,20 +99,18 @@ class TaskListener(TaskConfig):
         if self.bot_pm and self.is_super_chat:
             self.pm_msg = await send_message(
                 self.user_id,
-                f"""➲ <b><u>Task Started :</u></b>
-┃
-┖ <b>Link:</b> <a href='{self.source_url}'>Click Here</a>
-""",
+                SFMLStyle.PM_START.format(msg_link=self.source_url),
             )
         if Config.LINKS_LOG_ID:
             await send_message(
                 Config.LINKS_LOG_ID,
-                f"""➲  <b><u>{mode_name} Started:</u></b>
- ┃
- ┠ <b>User :</b> {self.tag} ( #ID{self.user_id} )
- ┠ <b>Message Link :</b> <a href='{self.message.link}'>Click Here</a>
- ┗ <b>Link:</b> <a href='{self.source_url}'>Click Here</a>
- """,
+                SFMLStyle.LINKS_LOG_START.format(
+                    Mode=mode_name,
+                    Tag=self.tag,
+                    Id=self.user_id,
+                    MsgLink=self.message.link,
+                    Link=self.source_url,
+                ),
             )
         if (
             self.is_super_chat
@@ -407,33 +406,33 @@ class TaskListener(TaskConfig):
             and Config.DATABASE_URL
         ):
             await database.rm_complete_task(self.message.link)
-        msg = (
-            f"<b><i>{escape(self.name)}</i></b>\n│"
-            f"\n┟ <b>Task Size</b> → {get_readable_file_size(self.size)}"
-            f"\n┠ <b>Time Taken</b> → {get_readable_time(time() - self.message.date.timestamp())}"
-            f"\n┠ <b>In Mode</b> → {self.mode[0]}"
-            f"\n┠ <b>Out Mode</b> → {self.mode[1]}"
+        msg = SFMLStyle.NAME.format(Name=escape(self.name))
+        msg += SFMLStyle.SIZE.format(Size=get_readable_file_size(self.size))
+        msg += SFMLStyle.ELAPSE.format(
+            Time=get_readable_time(time() - self.message.date.timestamp())
         )
+        msg += SFMLStyle.MODE.format(Mode=f"{self.mode[0]} ➜ {self.mode[1]}")
+
         LOGGER.info(f"Task Done: {self.name}")
         if self.is_yt:
             buttons = ButtonMaker()
             if mime_type == "Folder/Playlist":
-                msg += "\n┠ <b>Type</b> → Playlist"
-                msg += f"\n┖ <b>Total Videos</b> → {files}"
+                msg += SFMLStyle.M_TYPE.format(Mimetype="Playlist")
+                msg += SFMLStyle.TOTAL_FILES.format(Files=files)
                 if link:
                     buttons.url_button(
                         "🔗 View Playlist", link, style=ButtonStyle.PRIMARY
                     )
                 user_message = f"{self.tag}\nYour playlist ({files} videos) has been uploaded to YouTube successfully!"
             else:
-                msg += "\n┖ <b>Type</b> → Video"
+                msg += SFMLStyle.M_TYPE.format(Mimetype="Video")
                 if link:
                     buttons.url_button("🔗 View Video", link, style=ButtonStyle.PRIMARY)
                 user_message = (
                     f"{self.tag}\nYour video has been uploaded to YouTube successfully!"
                 )
 
-            msg += f"\n\n<b>Task By: </b>{self.tag}"
+            msg += f"\n<b>Task By: </b>{self.tag}"
 
             button = buttons.build_menu(1) if link else None
 
@@ -443,15 +442,15 @@ class TaskListener(TaskConfig):
             await send_message(self.message, user_message, button)
 
         elif self.is_leech:
-            msg += f"\n<b>Total Files: </b>{folders}"
+            msg += SFMLStyle.L_TOTAL_FILES.format(Files=folders)
             if mime_type != 0:
-                msg += f"\n┠ <b>Corrupted Files</b> → {mime_type}"
-            msg += f"\n┖ <b>Task By</b> → {self.tag}\n\n"
+                msg += SFMLStyle.L_CORRUPTED_FILES.format(Corrupt=mime_type)
+            msg += SFMLStyle.L_CC.format(Tag=self.tag)
 
             if self.bot_pm:
                 pmsg = msg
-                pmsg += "〶 <b><u>Action Performed :</u></b>\n"
-                pmsg += "⋗ <i>File(s) have been sent to User PM</i>\n\n"
+                pmsg += f"〶 <b><u>{SFMLStyle.ACTION_BT} :</u></b>\n"
+                pmsg += f"⋗ <i>{SFMLStyle.L_BOT_MSG}</i>\n\n"
                 if self.is_super_chat:
                     await send_message(self.message, pmsg)
 
@@ -479,10 +478,10 @@ class TaskListener(TaskConfig):
                 if fmsg != "":
                     await send_message(log_chat, msg + fmsg)
         else:
-            msg += f"\n│\n┟ <b>Type</b> → {mime_type}"
+            msg += SFMLStyle.M_TYPE.format(Mimetype=mime_type)
             if mime_type == "Folder":
-                msg += f"\n┠ <b>SubFolders</b> → {folders}"
-                msg += f"\n┠ <b>Files</b> → {files}"
+                msg += SFMLStyle.M_SUBFOLD.format(Folder=folders)
+                msg += SFMLStyle.TOTAL_FILES.format(Files=files)
 
             multi_link_msg = ""
             multi_links = []
@@ -509,12 +508,12 @@ class TaskListener(TaskConfig):
             ):
                 buttons = ButtonMaker()
                 if link and Config.SHOW_CLOUD_LINK:
-                    buttons.url_button("☁️ Cloud Link", link, style=ButtonStyle.PRIMARY)
+                    buttons.url_button(SFMLStyle.CLOUD_LINK, link, style=ButtonStyle.PRIMARY)
                 elif multi_links:
                     for name, url in multi_links:
                         buttons.url_button(name, url)
                 else:
-                    msg += f"\n\nPath: <code>{rclone_path}</code>"
+                    msg += SFMLStyle.RCPATH.format(RCpath=rclone_path)
                 if rclone_path and Config.RCLONE_SERVE_URL and not self.private_link:
                     remote, rpath = rclone_path.split(":", 1)
                     url_path = rutils.quote(f"{rpath}")
@@ -522,7 +521,7 @@ class TaskListener(TaskConfig):
                     if mime_type == "Folder":
                         share_url += "/"
                     buttons.url_button(
-                        "🔗 Rclone Link", share_url, style=ButtonStyle.PRIMARY
+                        SFMLStyle.RCLONE_LINK, share_url, style=ButtonStyle.PRIMARY
                     )
                 if not rclone_path and dir_id:
                     INDEX_URL = ""
@@ -536,22 +535,22 @@ class TaskListener(TaskConfig):
                         if mime_type == "Folder":
                             share_url += "/"
                         buttons.url_button(
-                            "⚡ Index Link", share_url, style=ButtonStyle.PRIMARY
+                            SFMLStyle.INDEX_LINK_D, share_url, style=ButtonStyle.PRIMARY
                         )
                         if mime_type.startswith(("image", "video", "audio")):
                             share_urls = f"{share_url}?a=view"
                             buttons.url_button(
-                                "🌐 View Link", share_urls, style=ButtonStyle.PRIMARY
+                                SFMLStyle.VIEW_LINK, share_urls, style=ButtonStyle.PRIMARY
                             )
                 button = buttons.build_menu(2)
             else:
                 if not multi_link_msg:
-                    msg += f"\n┃\n┠ Path: <code>{rclone_path}</code>"
+                    msg += SFMLStyle.RCPATH.format(RCpath=rclone_path)
                 button = None
-            msg += f"\n┃\n┖ <b>Task By</b> → {self.tag}\n\n"
+            msg += SFMLStyle.M_CC.format(Tag=self.tag)
             group_msg = (
-                msg + "〶 <b><u>Action Performed :</u></b>\n"
-                "⋗ <i>Cloud link(s) have been sent to User PM</i>\n\n"
+                msg + f"〶 <b><u>{SFMLStyle.ACTION_BT} :</u></b>\n"
+                f"⋗ <i>{SFMLStyle.M_BOT_MSG}</i>\n\n"
             )
 
             if multi_link_msg:
@@ -599,21 +598,21 @@ class TaskListener(TaskConfig):
             count = len(task_dict)
         await self.remove_from_same_dir()
         msg = (
-            f"""〶 <b><i><u>Limit Breached:</u></i></b>
-│
-┟ <b>Task Size</b> → {get_readable_file_size(self.size)}
-┠ <b>In Mode</b> → {self.mode[0]}
-┠ <b>Out Mode</b> → {self.mode[1]}
-{error}"""
+            SFMLStyle.LIMIT_BREACHED.format(
+                Size=get_readable_file_size(self.size),
+                InMode=self.mode[0],
+                OutMode=self.mode[1],
+                Error=error,
+            )
             if is_limit
-            else f"""<i><b>〶 Download Stopped!</b></i>
-│
-┟ <b>Due To</b> → {escape(str(error))}
-┠ <b>Task Size</b> → {get_readable_file_size(self.size)}
-┠ <b>Time Taken</b> → {get_readable_time(time() - self.message.date.timestamp())}
-┠ <b>In Mode</b> → {self.mode[0]}
-┠ <b>Out Mode</b> → {self.mode[1]}
-┖ <b>Task By</b> → {self.tag}"""
+            else SFMLStyle.DOWNLOAD_STOPPED.format(
+                Error=escape(str(error)),
+                Size=get_readable_file_size(self.size),
+                Time=get_readable_time(time() - self.message.date.timestamp()),
+                InMode=self.mode[0],
+                OutMode=self.mode[1],
+                Tag=self.tag,
+            )
         )
 
         await send_message(self.message, msg, button)
