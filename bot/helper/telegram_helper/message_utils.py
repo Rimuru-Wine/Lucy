@@ -2,7 +2,7 @@ from asyncio import sleep, gather
 from re import match as re_match
 from time import time
 
-from pyrogram.types import Message
+from pyrogram.types import Message, InputMediaPhoto
 from pyrogram.enums import ParseMode
 from pyrogram.errors import (
     FloodWait,
@@ -109,8 +109,18 @@ async def send_message(message, text, buttons=None, block=True, photo=None, **kw
         return str(e)
 
 
-async def edit_message(message, text, buttons=None, block=True):
+async def edit_message(message, text, buttons=None, block=True, photo=None):
     try:
+        if photo:
+            return await message.edit_media(
+                media=InputMediaPhoto(photo, caption=text),
+                reply_markup=buttons,
+            )
+        if message.photo or message.video or message.document:
+            return await message.edit_caption(
+                caption=text,
+                reply_markup=buttons,
+            )
         return await message.edit(
             text=text,
             disable_web_page_preview=True,
@@ -383,4 +393,4 @@ async def send_status_message(msg, user_id=0):
         if not intervals["status"].get(sid) and not is_user:
             intervals["status"][sid] = SetInterval(
                 Config.STATUS_UPDATE_INTERVAL, update_status_message, sid
-            )
+                )
