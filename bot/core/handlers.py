@@ -1,5 +1,3 @@
-# ruff: noqa: F403, F405
-
 from pyrogram.filters import command, regex
 from pyrogram.handlers import CallbackQueryHandler, EditedMessageHandler, MessageHandler
 from pyrogram.types import BotCommand
