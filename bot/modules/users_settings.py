@@ -342,22 +342,22 @@ Here I will explain how to use mltb.* which is reference to files you want to wo
     ),
     "METADATA_TITLE": (
         "String",
-        "Metadata Title. Example: Joined @WZML_X",
+        "Metadata Title",
         "<i>Send your Metadata Title.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_AUTHOR": (
         "String",
-        "Metadata Author. Example: @WZML_X",
+        "Metadata Author",
         "<i>Send your Metadata Author.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_ARTIST": (
         "String",
-        "Metadata Artist. Example: @WZML_X",
+        "Metadata Artist",
         "<i>Send your Metadata Artist.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_AUDIO": (
         "String",
-        "Metadata Audio Name. Example: English",
+        "Metadata Audio Name. Example: Hindi",
         "<i>Send your Metadata Audio Name.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_SUBTITLE": (
@@ -367,62 +367,62 @@ Here I will explain how to use mltb.* which is reference to files you want to wo
     ),
     "METADATA_VIDEO": (
         "String",
-        "Metadata Video Name. Example: @WZML_X",
+        "Metadata Video Name.",
         "<i>Send your Metadata Video Name.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_ENCODED_BY": (
         "String",
-        "Metadata Encoded By. Example: @WZML_X",
+        "Metadata Encoded By.",
         "<i>Send your Metadata Encoded By.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_CUSTOM_TAG": (
         "String",
-        "Metadata Custom Tag. Example: @WZML_X",
+        "Metadata Custom Tag.",
         "<i>Send your Metadata Custom Tag.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_COMMENT": (
         "String",
-        "Metadata Comment. Example: @WZML_X",
+        "Metadata Comment.",
         "<i>Send your Metadata Comment.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_DUBBED_BY": (
         "String",
-        "Metadata Dubbed By. Example: @WZML_X",
+        "Metadata Dubbed By.",
         "<i>Send your Metadata Dubbed By.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_CHANNEL": (
         "String",
-        "Metadata Channel. Example: @WZML_X",
+        "Metadata Channel.",
         "<i>Send your Metadata Channel.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_WEBSITE": (
         "String",
-        "Metadata Website. Example: https://t.me/WZML_X",
+        "Metadata Website.",
         "<i>Send your Metadata Website.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_COPYRIGHT": (
         "String",
-        "Metadata Copyright. Example: By Leech Bot",
+        "Metadata Copyright. Example: By Rare Bots Bot",
         "<i>Send your Metadata Copyright.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_PUBLISHER": (
         "String",
-        "Metadata Publisher. Example: @WZML_X",
+        "Metadata Publisher.",
         "<i>Send your Metadata Publisher.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_ENCODER": (
         "String",
-        "Metadata Encoder. Example: @WZML_X",
+        "Metadata Encoder.",
         "<i>Send your Metadata Encoder.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_SOURCE": (
         "String",
-        "Metadata Source. Example: @WZML_X",
+        "Metadata Source.",
         "<i>Send your Metadata Source.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_STUDIO": (
         "String",
-        "Metadata Studio. Example: @WZML_X",
+        "Metadata Studio.",
         "<i>Send your Metadata Studio.</i> \n┖ <b>Time Left :</b> <code>60 sec</code>",
     ),
     "METADATA_ALL": (
