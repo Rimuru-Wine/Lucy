@@ -26,10 +26,25 @@ async def mydramalist_search(_, message):
                 if resp.status != 200:
                     return await edit_message(temp, "<i>No Results Found</i>, Try Again or Use <b>MyDramaList Link</b>")
                 mdl = await resp.json()
-        if not mdl.get('results'):
+        if isinstance(mdl, list):
+            results = mdl
+        elif isinstance(mdl, dict):
+            if 'results' in mdl:
+                results = mdl['results']
+            elif 'data' in mdl and 'results' in mdl['data']:
+                results = mdl['data']['results']
+            else:
+                results = []
+        else:
+            results = []
+
+        if not results:
             return await edit_message(temp, "<i>No Results Found</i>, Try Again or Use <b>MyDramaList Link</b>")
-        for drama in mdl['results']:
-            buttons.data_button(f"🎬 {drama.get('title')} ({drama.get('year')})", f"mdl {user_id} drama {drama.get('slug')}")
+        for drama in results:
+            slug = drama.get('slug') or drama.get('id')
+            if not slug:
+                continue
+            buttons.data_button(f"🎬 {drama.get('title')} ({drama.get('year')})", f"mdl {user_id} drama {slug}")
         buttons.data_button("🚫 Close 🚫", f"mdl {user_id} close", style=ButtonStyle.DANGER)
         await edit_message(temp, '<b><i>Dramas found on MyDramaList :</i></b>', buttons.build_menu(1))
     else:
@@ -45,14 +60,28 @@ async def extract_MDL(slug):
 
     casts = []
     if cast_data and 'cast' in cast_data:
-        for role_type in ['Main Role', 'Support Role']:
-            if role_type in cast_data['cast']:
-                for person in cast_data['cast'][role_type]:
-                    casts.append({'name': person.get('name'), 'link': person.get('profile_url')})
+        if isinstance(cast_data['cast'], list):
+            for person in cast_data['cast']:
+                casts.append({'name': person.get('name'), 'link': person.get('profile_url')})
+        else:
+            for role_type in ['Main Role', 'Support Role']:
+                if role_type in cast_data['cast']:
+                    for person in cast_data['cast'][role_type]:
+                        casts.append({'name': person.get('name'), 'link': person.get('profile_url')})
 
     plot = mdl.get('synopsis')
     if plot and len(plot) > 300:
         plot = f"{plot[:300]}..."
+
+    directors = []
+    screenwriters = []
+    if cast_data and 'crew' in cast_data:
+        for crew in cast_data['crew']:
+            if 'Director' in crew.get('role', ''):
+                directors.append(crew.get('name'))
+            if 'Screenwriter' in crew.get('role', ''):
+                screenwriters.append(crew.get('name'))
+
     return {
         'title': mdl.get('title'),
         'score': mdl.get('rating'),
@@ -70,11 +99,11 @@ async def extract_MDL(slug):
         'popularity': mdl.get("popularity"),
         'related_content': "",
         'native_title': mdl.get("native_title"),
-        'director': "",
-        'screenwriter': "",
+        'director': list_to_str(directors),
+        'screenwriter': list_to_str(screenwriters),
         'genres': list_to_hash(mdl.get("genres"), emoji=True),
         'tags': list_to_str(mdl.get("tags")),
-        'poster': mdl.get('image', '').replace('_4c.jpg', '_4f.jpg').strip(),
+        'poster': mdl.get('image', '').replace('_4c.jpg', '_4f.jpg').strip() if mdl.get('image') else None,
         'synopsis': plot,
         'rating': str(mdl.get("rating"))+" / 10",
         'content_rating': mdl.get("content_rating"),
@@ -85,7 +114,10 @@ async def extract_MDL(slug):
 def list_to_str(k, cast=False):
     if not k:
         return ""
-    elif len(k) == 1:
+    k = [x for x in k if x]
+    if not k:
+        return ""
+    if len(k) == 1:
         if cast:
             return f'''<a href="{k[0].get('link')}">{k[0].get('name')}</a>'''
         return str(k[0])
@@ -99,7 +131,10 @@ def list_to_hash(k, flagg=False, emoji=False):
     listing = ""
     if not k:
         return ""
-    elif len(k) == 1:
+    k = [x for x in k if x]
+    if not k:
+        return ""
+    if len(k) == 1:
         if not flagg:
             if emoji:
                 return str(IMDB_GENRE_EMOJI.get(k[0], '')+" #"+k[0].replace(" ", "_").replace("-", "_"))
@@ -147,14 +182,16 @@ async def mdl_callback(_, query):
             cap = template.format(**mdl)
         else:
             cap = "<i>No Data Received</i>"
+
+        reply_to = message.reply_to_message or message
         if mdl.get('poster'):
             try:
-                await TgClient.bot.send_photo(chat_id=message.reply_to_message.chat.id, photo=mdl["poster"], caption=cap, reply_markup=buttons.build_menu(1), reply_to_message_id=message.reply_to_message.id)
+                await send_message(reply_to, cap, buttons.build_menu(1), photo=mdl["poster"])
             except (MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty):
                 poster = mdl["poster"].replace('_4f.jpg', '_4c.jpg')
-                await send_message(message.reply_to_message, cap, buttons.build_menu(1), poster)
+                await send_message(reply_to, cap, buttons.build_menu(1), photo=poster)
         else:
-            await send_message(message.reply_to_message, cap, buttons.build_menu(1), 'https://telegra.ph/file/5af8d90a479b0d11df298.jpg')
+            await send_message(reply_to, cap, buttons.build_menu(1), photo='https://telegra.ph/file/5af8d90a479b0d11df298.jpg')
         await delete_message(message)
     else:
         await query.answer()
