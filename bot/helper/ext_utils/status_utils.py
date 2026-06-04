@@ -256,7 +256,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += SFMLStyle.PROCESSED.format(Processed=f"<i>{task.processed_bytes()}{subsize} 𝗈𝖿 {task.size()}</i>")
             if count:
                 msg += f"\n┠ <b>𝖢𝗈𝗎𝗇𝗍:</b> → <b>{count}</b>"
-            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url.startswith("http") else "")
+            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url and task.listener.source_url.startswith("http") else "")
             msg += SFMLStyle.SPEED.format(Speed=task.speed())
             msg += SFMLStyle.ETA.format(Eta=task.eta())
             msg += SFMLStyle.ELAPSED.format(Elapsed=get_readable_time(elapsed))
@@ -270,7 +270,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         elif tstatus == MirrorStatus.STATUS_SEED:
             msg += SFMLStyle.SEED_SIZE.format(Size=task.size())
             msg += SFMLStyle.UPLOADED.format(Upload=task.uploaded_bytes())
-            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url.startswith("http") else "")
+            msg += SFMLStyle.STATUS.format(Status=tstatus, Url=task.listener.source_url if task.listener.source_url and task.listener.source_url.startswith("http") else "")
             msg += SFMLStyle.SEED_SPEED.format(Speed=task.seed_speed())
             msg += SFMLStyle.RATIO.format(Ratio=task.ratio())
             msg += SFMLStyle.TIME.format(Time=task.seeding_time())
