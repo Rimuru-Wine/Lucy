@@ -1,5 +1,3 @@
-# ruff: noqa: E402
-
 from uvloop import install
 
 install()
@@ -79,6 +77,12 @@ var_list = [
     "UPSTREAM_REPO",
     "UPSTREAM_BRANCH",
     "UPDATE_PKGS",
+    "START_MESSAGE",
+    "ABOUT_TEXT",
+    "START_PIC",
+    "ABOUT_PIC",
+    "SETTINGS_PIC",
+    "TASK_PIC",
 ]
 auth_chats = {}
 excluded_extensions = ["aria2", "!qB"]
