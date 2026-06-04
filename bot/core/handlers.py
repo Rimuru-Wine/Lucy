@@ -371,6 +371,28 @@ def add_handlers():
             & CustomFilters.authorized,
         )
     )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            get_poster_menu,
+            filters=command(BotCommands.PosterCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(handle_back_to_search, filters=regex("^p_search_"))
+    )
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(show_poster_categories, filters=regex("^p_menu_"))
+    )
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(handle_poster_viewer, filters=regex("^p_view_"))
+    )
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(ignore_callback, filters=regex("^none_data$"))
+    )
+    TgClient.bot.add_handler(
+        CallbackQueryHandler(close_callback, filters=regex("^close_data$"))
+    )
     if Config.SET_COMMANDS:
         global BOT_COMMANDS
 
