@@ -1,4 +1,3 @@
-# ruff: noqa: F403, F405
 mirror = """<b>Send link along with command line or </b>
 
 /cmd link
