@@ -30,7 +30,9 @@ from ..helper.telegram_helper.message_utils import (
 
 
 async def get_start_message(update, user_id):
-    if await CustomFilters.authorized(None, update):
+    if Config.START_MESSAGE:
+        msg = Config.START_MESSAGE
+    elif await CustomFilters.authorized(None, update):
         msg = SFMLStyle.ST_MSG
     elif Config.BOT_PM:
         msg = SFMLStyle.ST_BOTPM
@@ -40,7 +42,8 @@ async def get_start_message(update, user_id):
     msg = msg.format(mention=mention, help_command=f"/{BotCommands.HelpCommand[0]}")
     buttons = ButtonMaker()
     buttons.data_button(SFMLStyle.ABOUT_BT, "start about")
-    return msg, buttons.build_menu(1)
+    buttons.data_button(SFMLStyle.CLOSE_BT, "start close", style=ButtonStyle.DANGER)
+    return msg, buttons.build_menu(2)
 
 
 @new_task
@@ -95,7 +98,7 @@ async def start(_, message):
             return await send_message(message, msg, reply_markup)
 
     msg, reply_markup = await get_start_message(message, userid)
-    await send_message(message, msg, reply_markup)
+    await send_message(message, msg, reply_markup, photo=Config.START_PIC)
     await database.set_pm_users(userid)
 
 
@@ -129,13 +132,23 @@ async def start_cb(_, query):
         )
         await edit_reply_markup(query.message, InlineKeyboardMarkup(kb))
     elif data[1] == "about":
-        msg = SFMLStyle.ABOUT_MSG.format(mention=query.from_user.mention)
+        msg = (Config.ABOUT_TEXT or SFMLStyle.ABOUT_MSG).format(
+            mention=query.from_user.mention
+        )
         buttons = ButtonMaker()
         buttons.data_button(SFMLStyle.BACK_BT, "start back")
-        await edit_message(query.message, msg, buttons.build_menu(1))
+        await edit_message(
+            query.message,
+            msg,
+            buttons.build_menu(1),
+            photo=Config.ABOUT_PIC or Config.START_PIC,
+        )
     elif data[1] == "back":
         msg, buttons = await get_start_message(query, user_id)
-        await edit_message(query.message, msg, buttons)
+        await edit_message(query.message, msg, buttons, photo=Config.START_PIC)
+    elif data[1] == "close":
+        await query.answer()
+        await delete_message(query.message.reply_to_message, query.message)
 
 
 @new_task
