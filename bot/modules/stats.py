@@ -30,6 +30,7 @@ from ..helper.ext_utils.status_utils import (
     get_readable_file_size,
     get_readable_time,
 )
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.telegram_helper.message_utils import (
@@ -73,59 +74,60 @@ async def get_stats(event, key="home"):
     btns = ButtonMaker()
     if key == "home":
         btns = ButtonMaker()
-        btns.data_button("Bot Stats", f"stats {user_id} stbot")
-        btns.data_button("OS Stats", f"stats {user_id} stsys")
-        btns.data_button("Repo Stats", f"stats {user_id} strepo")
-        btns.data_button("Pkgs Stats", f"stats {user_id} stpkgs")
-        btns.data_button("Task Limits", f"stats {user_id} tlimits")
-        btns.data_button("Sys Tasks", f"stats {user_id} systasks")
-        msg = "⌬ <b><i>Bot & OS Statistics!</i></b>"
+        btns.data_button("𝖡𝗈𝗍 𝖲𝗍𝖺𝗍𝗌", f"stats {user_id} stbot")
+        btns.data_button("𝖮𝖲 𝖲𝗍𝖺𝗍𝗌", f"stats {user_id} stsys")
+        btns.data_button("𝖱𝖾𝗉𝗈 𝖲𝗍𝖺𝗍𝗌", f"stats {user_id} strepo")
+        btns.data_button("𝖯𝗄𝗀𝗌 𝖲𝗍𝖺𝗍𝗌", f"stats {user_id} stpkgs")
+        btns.data_button("𝖳𝖺𝗌𝗄 𝖫𝗂𝗆𝗂𝗍𝗌", f"stats {user_id} tlimits")
+        btns.data_button("𝖲𝗒𝗌 𝖳𝖺𝗌𝗄𝗌", f"stats {user_id} systasks")
+        msg = "⌬ <b><i>𝖡𝗈𝗍 & 𝖮𝖲 𝖲𝗍𝖺𝗍𝗂𝗌𝗍𝗂𝖼𝗌!</i></b>"
     elif key == "stbot":
         total, used, free, disk = disk_usage("/")
         swap = swap_memory()
         memory = virtual_memory()
         disk_io = disk_io_counters()
-        msg = f"""⌬ <b><i>BOT STATISTICS :</i></b>
-┖ <b>Bot Uptime :</b> {get_readable_time(time() - bot_start_time)}
-
-┎ <b><i>RAM ( MEMORY ) :</i></b>
-┃ {get_progress_bar_string(memory.percent)} {memory.percent}%
-┖ <b>U :</b> {get_readable_file_size(memory.used)} | <b>F :</b> {get_readable_file_size(memory.available)} | <b>T :</b> {get_readable_file_size(memory.total)}
-
-┎ <b><i>SWAP MEMORY :</i></b>
-┃ {get_progress_bar_string(swap.percent)} {swap.percent}%
-┖ <b>U :</b> {get_readable_file_size(swap.used)} | <b>F :</b> {get_readable_file_size(swap.free)} | <b>T :</b> {get_readable_file_size(swap.total)}
-
-┎ <b><i>DISK :</i></b>
-┃ {get_progress_bar_string(disk)} {disk}%
-┃ <b>Total Disk Read :</b> {f"{get_readable_file_size(disk_io.read_bytes)} ({get_readable_time(disk_io.read_time / 1000)})" if disk_io else "Access Denied"}
-┃ <b>Total Disk Write :</b> {f"{get_readable_file_size(disk_io.write_bytes)} ({get_readable_time(disk_io.write_time / 1000)})" if disk_io else "Access Denied"}
-┖ <b>U :</b> {get_readable_file_size(used)} | <b>F :</b> {get_readable_file_size(free)} | <b>T :</b> {get_readable_file_size(total)}
-"""
+        msg = SFMLStyle.BOT_STATS.format(
+            bot_uptime=get_readable_time(time() - bot_start_time),
+            ram_bar=get_progress_bar_string(memory.percent),
+            ram=memory.percent,
+            ram_u=get_readable_file_size(memory.used),
+            ram_f=get_readable_file_size(memory.available),
+            ram_t=get_readable_file_size(memory.total),
+            swap_bar=get_progress_bar_string(swap.percent),
+            swap=swap.percent,
+            swap_u=get_readable_file_size(swap.used),
+            swap_f=get_readable_file_size(swap.free),
+            swap_t=get_readable_file_size(swap.total),
+            disk_bar=get_progress_bar_string(disk),
+            disk=disk,
+            disk_read=f"{get_readable_file_size(disk_io.read_bytes)} ({get_readable_time(disk_io.read_time / 1000)})" if disk_io else "𝖠𝖼𝖼𝖾𝗌𝗌 𝖣𝖾𝗇𝗂𝖾𝖽",
+            disk_write=f"{get_readable_file_size(disk_io.write_bytes)} ({get_readable_time(disk_io.write_time / 1000)})" if disk_io else "𝖠𝖼𝖼𝖾𝗌𝗌 𝖣𝖾𝗇𝗂𝖾𝖽",
+            disk_u=get_readable_file_size(used),
+            disk_f=get_readable_file_size(free),
+            disk_t=get_readable_file_size(total),
+        )
     elif key == "stsys":
         cpu_usage = cpu_percent(interval=0.5)
-        msg = f"""⌬ <b><i>OS SYSTEM :</i></b>
-┟ <b>OS Uptime :</b> {get_readable_time(time() - boot_time())}
-┠ <b>OS Version :</b> {version()}
-┖ <b>OS Arch :</b> {platform()}
-
-⌬ <b><i>NETWORK STATS :</i></b>
-┟ <b>Upload Data:</b> {get_readable_file_size(net_io_counters().bytes_sent)}
-┠ <b>Download Data:</b> {get_readable_file_size(net_io_counters().bytes_recv)}
-┠ <b>Pkts Sent:</b> {str(net_io_counters().packets_sent)[:-3]}k
-┠ <b>Pkts Received:</b> {str(net_io_counters().packets_recv)[:-3]}k
-┖ <b>Total I/O Data:</b> {get_readable_file_size(net_io_counters().bytes_recv + net_io_counters().bytes_sent)}
-
-┎ <b>CPU :</b>
-┃ {get_progress_bar_string(cpu_usage)} {cpu_usage}%
-┠ <b>CPU Frequency :</b> {f"{cpu_freq().current / 1000:.2f} GHz" if cpu_freq() else "Access Denied"}
-┠ <b>System Avg Load :</b> {"%, ".join(str(round((x / cpu_count() * 100), 2)) for x in getloadavg())}%, (1m, 5m, 15m)
-┠ <b>P-Core(s) :</b> {cpu_count(logical=False)} | <b>V-Core(s) :</b> {cpu_count(logical=True) - cpu_count(logical=False)}
-┠ <b>Total Core(s) :</b> {cpu_count(logical=True)}
-┖ <b>Usable CPU(s) :</b> {len(Process().cpu_affinity())}
-"""
+        msg = SFMLStyle.SYS_STATS.format(
+            os_uptime=get_readable_time(time() - boot_time()),
+            os_version=version(),
+            os_arch=platform(),
+            up_data=get_readable_file_size(net_io_counters().bytes_sent),
+            dl_data=get_readable_file_size(net_io_counters().bytes_recv),
+            pkt_sent=str(net_io_counters().packets_sent)[:-3],
+            pkt_recv=str(net_io_counters().packets_recv)[:-3],
+            tl_data=get_readable_file_size(net_io_counters().bytes_recv + net_io_counters().bytes_sent),
+            cpu_bar=get_progress_bar_string(cpu_usage),
+            cpu=cpu_usage,
+            cpu_freq=f"{cpu_freq().current / 1000:.2f} 𝖦𝖧𝗓" if cpu_freq() else "𝖠𝖼𝖼𝖾𝗌𝗌 𝖣𝖾𝗇𝗂𝖾𝖽",
+            sys_load="%, ".join(str(round((x / cpu_count() * 100), 2)) for x in getloadavg()) + "%, (1𝗆, 5𝗆, 15𝗆)",
+            p_core=cpu_count(logical=False),
+            v_core=cpu_count(logical=True) - cpu_count(logical=False),
+            total_core=cpu_count(logical=True),
+            cpu_use=len(Process().cpu_affinity()),
+        )
     elif key == "strepo":
-        last_commit, changelog = "No Data", "N/A"
+        last_commit, changelog = "𝖭𝗈 𝖣𝖺𝗍𝖺", "𝖭/𝖠"
         if await aiopath.exists(".git"):
             last_commit = (
                 await cmd_exec(
@@ -135,7 +137,7 @@ async def get_stats(event, key="home"):
             )[0]
             changelog = (
                 await cmd_exec(
-                    "git log -1 --pretty=format:'<code>%s</code> <b>By</b> %an'", True
+                    "git log -1 --pretty=format:'<code>%s</code> <b>𝖡𝗒</b> %an'", True
                 )
             )[0]
         official_v = (
@@ -144,55 +146,44 @@ async def get_stats(event, key="home"):
                 True,
             )
         )[0]
-        msg = f"""⌬ <b><i>Repo Statistics :</i></b>
-│
-┟ <b>Bot Updated :</b> {last_commit}
-┠ <b>Current Version :</b> {get_version()}
-┠ <b>Latest Version :</b> {official_v}
-┖ <b>Last ChangeLog :</b> {changelog}
-
-⌬ <b>REMARKS :</b> <code>{compare_versions(get_version(), official_v)}</code>
-    """
+        msg = SFMLStyle.REPO_STATS.format(
+            last_commit=last_commit,
+            bot_version=get_version(),
+            lat_version=official_v,
+            commit_details=changelog,
+            remarks=compare_versions(get_version(), official_v),
+        )
     elif key == "stpkgs":
         ver = bot_cache.get("eng_versions", {})
-        msg = f"""⌬ <b><i>Packages Statistics :</i></b>
-│
-┟ <b>python:</b> {ver.get("python", "N/A")}
-┠ <b>aria2:</b> {ver.get("aria2", "N/A")}
-┠ <b>qBittorrent:</b> {ver.get("qBittorrent", "N/A")}
-┠ <b>SABnzbd+:</b> {ver.get("SABnzbd+", "N/A")}
-┠ <b>rclone:</b> {ver.get("rclone", "N/A")}
-┠ <b>yt-dlp:</b> {ver.get("yt-dlp", "N/A")}
-┠ <b>ffmpeg:</b> {ver.get("ffmpeg", "N/A")}
-┠ <b>7z:</b> {ver.get("7z", "N/A")}
-┠ <b>Aiohttp:</b> {ver.get("aiohttp", "N/A")}
-┠ <b>PyroTgFork:</b> {ver.get("pyrotgfork", "N/A")}
-┠ <b>Google API:</b> {ver.get("gapi", "N/A")}
-┖ <b>Mega CMD:</b> {ver.get("mega", "N/A")}
-"""
+        msg = SFMLStyle.PKGS_STATS.format(
+            python=ver.get("python", "𝖭/𝖠"),
+            aria2=ver.get("aria2", "𝖭/𝖠"),
+            qbit=ver.get("qBittorrent", "𝖭/𝖠"),
+            sabnzbd=ver.get("SABnzbd+", "𝖭/𝖠"),
+            rclone=ver.get("rclone", "𝖭/𝖠"),
+            ytdlp=ver.get("yt-dlp", "𝖭/𝖠"),
+            ffmpeg=ver.get("ffmpeg", "𝖭/𝖠"),
+            sevenz=ver.get("7z", "𝖭/𝖠"),
+            aiohttp=ver.get("aiohttp", "𝖭/𝖠"),
+            pyrotgfork=ver.get("pyrotgfork", "𝖭/𝖠"),
+            gapi=ver.get("gapi", "𝖭/𝖠"),
+            mega=ver.get("mega", "𝖭/𝖠"),
+        )
     elif key == "tlimits":
-        msg = f"""⌬ <b><i>Bot Task Limits :</i></b>
-│
-┟ <b>Direct Limit :</b> {Config.DIRECT_LIMIT or "∞"} GB
-┠ <b>Torrent Limit :</b> {Config.TORRENT_LIMIT or "∞"} GB
-┠ <b>GDriveDL Limit :</b> {Config.GD_DL_LIMIT or "∞"} GB
-┠ <b>RCloneDL Limit :</b> {Config.RC_DL_LIMIT or "∞"} GB
-┠ <b>Clone Limit :</b> {Config.CLONE_LIMIT or "∞"} GB
-┠ <b>JDown Limit :</b> {Config.JD_LIMIT or "∞"} GB
-┠ <b>NZB Limit :</b> {Config.NZB_LIMIT or "∞"} GB
-┠ <b>YT-DLP Limit :</b> {Config.YTDLP_LIMIT or "∞"} GB
-┠ <b>Playlist Limit :</b> {Config.PLAYLIST_LIMIT or "∞"}
-┠ <b>Mega Limit :</b> {Config.MEGA_LIMIT or "∞"} GB
-┠ <b>Leech Limit :</b> {Config.LEECH_LIMIT or "∞"} GB
-┠ <b>Archive Limit :</b> {Config.ARCHIVE_LIMIT or "∞"} GB
-┠ <b>Extract Limit :</b> {Config.EXTRACT_LIMIT or "∞"} GB
-┞ <b>Threshold Storage :</b> {Config.STORAGE_LIMIT or "∞"} GB
-│
-┟ <b>Token Validity :</b> {get_readable_time(Config.VERIFY_TIMEOUT) if Config.VERIFY_TIMEOUT else "Disabled"}
-┠ <b>User Time Limit :</b> {Config.USER_TIME_INTERVAL or "0"}s / task
-┠ <b>User Max Tasks :</b> {Config.USER_MAX_TASKS or "∞"}
-┖ <b>Bot Max Tasks :</b> {Config.BOT_MAX_TASKS or "∞"}
-    """
+        msg = SFMLStyle.BOT_LIMITS.format(
+            DL=Config.DIRECT_LIMIT or "∞",
+            TL=Config.TORRENT_LIMIT or "∞",
+            GL=Config.GD_DL_LIMIT or "∞",
+            YL=Config.YTDLP_LIMIT or "∞",
+            PL=Config.PLAYLIST_LIMIT or "∞",
+            ML=Config.MEGA_LIMIT or "∞",
+            CL=Config.CLONE_LIMIT or "∞",
+            LL=Config.LEECH_LIMIT or "∞",
+            TV=get_readable_time(Config.VERIFY_TIMEOUT) if Config.VERIFY_TIMEOUT else "𝖣𝗂𝗌𝖺𝖻𝗅𝖾𝖽",
+            UTI=Config.USER_TIME_INTERVAL or "0",
+            UT=Config.USER_MAX_TASKS or "∞",
+            BT=Config.BOT_MAX_TASKS or "∞",
+        )
 
     elif key == "systasks":
         try:
@@ -217,7 +208,7 @@ async def get_stats(event, key="home"):
         except Exception:
             processes = []
 
-        msg = "⌬ <b><i>System Tasks (High Usage)</i></b>\n│\n"
+        msg = SFMLStyle.SYS_TASKS
 
         if processes:
             for i, proc in enumerate(processes, 1):
@@ -225,17 +216,17 @@ async def get_stats(event, key="home"):
                 cpu = proc.get("cpu_percent", 0)
                 mem = proc.get("memory_percent", 0)
                 user = proc.get("username", "Unknown")[:10]
-                msg += f"┠ <b>{i:2d}.</b> <code>{name}</code>\n┃    🔹 <b>CPU:</b> {cpu:.1f}% | <b>MEM:</b> {mem:.1f}%\n┃    👤 <b>User:</b> {user} | <b>PID:</b> {proc['pid']}\n"
+                msg += f"┠ <b>{i:2d}.</b> <code>{name}</code>\n┃    🔹 <b>𝖢𝖯𝖴:</b> {cpu:.1f}% | <b>𝖬𝖤𝖬:</b> {mem:.1f}%\n┃    👤 <b>𝖴𝗌𝖾𝗋:</b> {user} | <b>𝖯𝖨𝖣:</b> {proc['pid']}\n"
                 btns.data_button(f"{i}", f"stats {user_id} killproc {proc['pid']}")
-            msg += "┃\n┖ <i>Click serial number to terminate process</i>"
+            msg += SFMLStyle.SYS_TASKS_FOOTER
         else:
-            msg += "┃\n┖ <i>No high usage processes found</i>"
+            msg += SFMLStyle.SYS_TASKS_NOT_FOUND
 
-        btns.data_button("🔄 Refresh", f"stats {user_id} systasks", "header")
+        btns.data_button("🔄 𝖱𝖾𝖿𝗋𝖾𝗌𝗁", f"stats {user_id} systasks", "header")
 
-    btns.data_button("Back", f"stats {user_id} home", "footer")
+    btns.data_button(SFMLStyle.BACK_BT, f"stats {user_id} home", "footer")
     btns.data_button(
-        "Close", f"stats {user_id} close", "footer", style=ButtonStyle.DANGER
+        SFMLStyle.CLOSE_BT, f"stats {user_id} close", "footer", style=ButtonStyle.DANGER
     )
     return msg, btns.build_menu(8 if key == "systasks" else 2)
 

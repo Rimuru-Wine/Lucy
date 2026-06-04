@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 from .. import LOGGER
 from ..core.tg_client import TgClient
 from ..helper.ext_utils.bot_utils import cmd_exec
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.ext_utils.telegraph_helper import telegraph
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.message_utils import send_message, edit_message
@@ -54,7 +55,7 @@ async def gen_mediainfo(message, link=None, media=None, mmsg=None):
         await aioremove(des_path)
     link_id = (await telegraph.create_page(title="MediaInfo X", content=tc))["path"]
     await temp_send.edit(
-        f"<b>MediaInfo:</b>\n\n➲ <b>Link :</b> https://graph.org/{link_id}",
+        SFMLStyle.MEDIAINFO_MSG.format(link_id=link_id),
         disable_web_page_preview=False,
     )
 
@@ -88,13 +89,10 @@ def parseinfo(out, size):
 
 async def mediainfo(_, message):
     rply = message.reply_to_message
-    help_msg = f"""
-<b>By replying to media:</b>
-<code>/{BotCommands.MediaInfoCommand[0]} or /{BotCommands.MediaInfoCommand[1]} [media]</code>
-
-<b>By reply/sending download link:</b>
-<code>/{BotCommands.MediaInfoCommand[0]} or /{BotCommands.MediaInfoCommand[1]} [link]</code>
-"""
+    help_msg = SFMLStyle.MEDIAINFO_HELP.format(
+        cmd1=BotCommands.MediaInfoCommand[0],
+        cmd2=BotCommands.MediaInfoCommand[1]
+    )
     if len(message.command) > 1 or rply and rply.text:
         link = rply.text if rply else message.command[1]
         return await gen_mediainfo(message, link)

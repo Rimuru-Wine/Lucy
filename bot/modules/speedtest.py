@@ -8,6 +8,7 @@ from ..helper.telegram_helper.message_utils import (
 )
 from ..helper.ext_utils.bot_utils import new_task, sync_to_async
 from ..helper.ext_utils.status_utils import get_readable_file_size
+from ..helper.ext_utils.style import SFMLStyle
 
 
 @new_task
@@ -26,23 +27,21 @@ async def speedtest(_, message):
         return
     speed_results.results.share()
     result = speed_results.results.dict()
-    string_speed = f"""
-➲ <b><i>SPEEDTEST INFO</i></b>
-┠ <b>Upload:</b> <code>{get_readable_file_size(result['upload'] / 8)}/s</code>
-┠ <b>Download:</b>  <code>{get_readable_file_size(result['download'] / 8)}/s</code>
-┠ <b>Ping:</b> <code>{result['ping']} ms</code>
-┠ <b>Time:</b> <code>{result['timestamp']}</code>
-┠ <b>Data Sent:</b> <code>{get_readable_file_size(int(result['bytes_sent']))}</code>
-┖ <b>Data Received:</b> <code>{get_readable_file_size(int(result['bytes_received']))}</code>
-
-➲ <b><i>SPEEDTEST SERVER</i></b>
-┠ <b>Name:</b> <code>{result['server']['name']}</code>
-┠ <b>Country:</b> <code>{result['server']['country']}, {result['server']['cc']}</code>
-┠ <b>Sponsor:</b> <code>{result['server']['sponsor']}</code>
-┠ <b>Latency:</b> <code>{result['server']['latency']}</code>
-┠ <b>Latitude:</b> <code>{result['server']['lat']}</code>
-┖ <b>Longitude:</b> <code>{result['server']['lon']}</code>
-"""
+    string_speed = SFMLStyle.SPEEDTEST_RESULT.format(
+        upload=get_readable_file_size(result['upload'] / 8),
+        download=get_readable_file_size(result['download'] / 8),
+        ping=result['ping'],
+        time=result['timestamp'],
+        sent=get_readable_file_size(int(result['bytes_sent'])),
+        received=get_readable_file_size(int(result['bytes_received'])),
+        name=result['server']['name'],
+        country=result['server']['country'],
+        cc=result['server']['cc'],
+        sponsor=result['server']['sponsor'],
+        latency=result['server']['latency'],
+        lat=result['server']['lat'],
+        lon=result['server']['lon']
+    )
     try:
         await send_message(message, string_speed, photo=result["share"])
         await delete_message(speed)

@@ -25,6 +25,7 @@ from ..helper.ext_utils.task_manager import (
     limit_checker,
 )
 from ..helper.ext_utils.status_utils import get_readable_file_size
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.listeners.task_listener import TaskListener
 from ..helper.mirror_leech_utils.download_utils.direct_link_generator import (
     direct_link_generator,
@@ -177,7 +178,7 @@ class Clone(TaskListener):
             drive = GoogleDriveClone(self)
             if files <= 10:
                 msg = await send_message(
-                    self.message, f"Cloning: <code>{self.link}</code>"
+                    self.message, SFMLStyle.CLONE_MSG.format(LINK=self.link)
                 )
             else:
                 msg = ""

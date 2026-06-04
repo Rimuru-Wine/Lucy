@@ -5,6 +5,7 @@ from ..helper.ext_utils.bot_utils import (
     new_task,
 )
 from ..helper.mirror_leech_utils.gdrive_utils.search import GoogleDriveSearch
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.telegram_helper.message_utils import send_message, edit_message
 
@@ -55,10 +56,10 @@ async def _list_drive(key, message, item_type, is_recursive, user_token, user_id
         except Exception as e:
             await edit_message(message, e)
             return
-        msg = f"<b>Found {contents_no} result for <i>{key}</i></b>"
+        msg = SFMLStyle.LIST_FOUND.format(NO=contents_no, NAME=key)
         await edit_message(message, msg, button)
     else:
-        await edit_message(message, f"No result found for <i>{key}</i>")
+        await edit_message(message, SFMLStyle.LIST_NOT_FOUND.format(NAME=key))
 
 
 @new_task
@@ -86,7 +87,7 @@ async def select_type(_, query):
     item_type = data[2]
     is_recursive = eval(data[3])
     user_token = eval(data[4])
-    await edit_message(message, f"<b>Searching.. for <i>{key}</i></b>")
+    await edit_message(message, SFMLStyle.LIST_SEARCHING.format(NAME=key))
     await _list_drive(key, message, item_type, is_recursive, user_token, user_id)
 
 
@@ -94,7 +95,7 @@ async def select_type(_, query):
 async def gdrive_search(_, message):
     if len(message.text.split()) == 1:
         return await send_message(
-            message, "<i>Send a search query along with list command</i>"
+            message, "<i>𝖲𝖾𝗇𝖽 𝖺 𝗌𝖾𝖺𝗋𝖼𝗁 𝗊𝗎𝖾𝗋𝗒 𝖺𝗅𝗈𝗇𝗀 𝗐𝗂𝗍𝗁 𝗅𝗂𝗌𝗍 𝖼𝗈𝗆𝗆𝖺𝗇𝖽</i>"
         )
     user_id = message.from_user.id
     buttons = await list_buttons(user_id)

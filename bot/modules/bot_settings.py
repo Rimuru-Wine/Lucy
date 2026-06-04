@@ -46,6 +46,7 @@ from ..helper.ext_utils.db_handler import database
 from ..core.jdownloader_booter import jdownloader
 from ..helper.ext_utils.task_manager import start_from_queued
 from ..helper.mirror_leech_utils.rclone_utils.serve import rclone_serve_booter
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.telegram_helper.message_utils import (
     delete_message,
@@ -78,21 +79,21 @@ DEFAULT_VALUES = {
 async def get_buttons(key=None, edit_type=None, edit_mode=False):
     buttons = ButtonMaker()
     if key is None:
-        buttons.data_button("Config Variables", "botset var")
-        buttons.data_button("Private Files", "botset private open")
-        buttons.data_button("Qbit Settings", "botset qbit")
-        buttons.data_button("Aria2c Settings", "botset aria")
-        buttons.data_button("Sabnzbd Settings", "botset nzb")
-        buttons.data_button("JDownloader Sync", "botset syncjd")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
-        msg = "Bot Settings:"
+        buttons.data_button(SFMLStyle.VAR_SET_BT, "botset var")
+        buttons.data_button(SFMLStyle.PRIVATE_BT, "botset private open")
+        buttons.data_button(SFMLStyle.QBIT_SET_BT, "botset qbit")
+        buttons.data_button(SFMLStyle.ARIA_SET_BT, "botset aria")
+        buttons.data_button(SFMLStyle.NZB_SET_BT, "botset nzb")
+        buttons.data_button(SFMLStyle.SYNC_JD_BT, "botset syncjd")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
+        msg = SFMLStyle.BOT_SET_BT + ":"
     elif edit_type is not None:
         if edit_type == "botvar":
             msg = ""
-            buttons.data_button("Back", "botset var")
+            buttons.data_button(SFMLStyle.BACK_BT, "botset var")
             if key not in ["TELEGRAM_HASH", "TELEGRAM_API", "OWNER_ID", "BOT_TOKEN"]:
-                buttons.data_button("Default", f"botset resetvar {key}")
-            buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+                buttons.data_button("𝖣𝖾𝖿𝖺𝗎𝗅𝗍", f"botset resetvar {key}")
+            buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
             if key in [
                 "CMD_SUFFIX",
                 "OWNER_ID",
@@ -154,17 +155,17 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         msg = f"Config Variables | Page: {int(start / 10)} | State: {state}"
     elif key == "private":
         if edit_mode:
-            buttons.data_button("Stop Invoke File", "botset private stop", "header")
+            buttons.data_button("𝖲𝗍𝗈𝗉 𝖨𝗇𝗏𝗈𝗄𝖾 𝖥𝗂𝗅𝖾", "botset private stop", "header")
         else:
-            buttons.data_button("Create New File", "botset private new")
-            buttons.data_button("Add/Delete File", "botset private edit")
-        buttons.data_button("Back", "botset back", position="footer")
+            buttons.data_button("𝖢𝗋𝖾𝖺𝗍𝖾 𝖭𝖾𝗐 𝖥𝗂𝗅𝖾", "botset private new")
+            buttons.data_button("𝖠𝖽𝖽/𝖣𝖾𝗅𝖾𝗍𝖾 𝖥𝗂𝗅𝖾", "botset private edit")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset back", position="footer")
         buttons.data_button(
-            "Close", "botset close", position="footer", style=ButtonStyle.DANGER
+            SFMLStyle.CLOSE_BT, "botset close", position="footer", style=ButtonStyle.DANGER
         )
         txt = "\n┠ ".join(
             [
-                f"<code>{fn}</code> → <b>{'Exists' if await aiopath.isfile(fn) else 'Not Exists'}</b>"
+                f"<code>{fn}</code> → <b>{'𝖤𝗑𝗂𝗌𝗍𝗌' if await aiopath.isfile(fn) else '𝖭𝗈𝗍 𝖤𝗑𝗂𝗌𝗍𝗌'}</b>"
                 for fn in [
                     "config.py",
                     "token.pickle",
@@ -177,27 +178,20 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
                 ]
             ]
         )
-        msg = f"""⌬ <b>Private File Settings</b>
-┠ <b>Dashboard :</b> 
-┃
-┠ {txt}
-┃
-┠ <b>Delete File</b> → Send the file name as text message, Like <code>rclone.conf</code>.
-┃
-┖ <b>Note:</b> Changing .netrc will not take effect for aria2c until restart."""
+        msg = SFMLStyle.PRIVATE_FILES.format(txt=txt)
         if edit_mode:
-            msg += "\n\n<i>Send the file name to delete the file, file to save the file & for new file create, follow below format.</i> \n\n<b>Format:</b> \nfile_name\n\ncontents of file</i>\n\n<b>Time Left :</b> <code>60 sec</code>"
+            msg += "\n\n<i>𝖲𝖾𝗇𝖽 the 𝖿𝗂𝗅𝖾 𝗇𝖺𝗆𝖾 𝗍𝗈 𝖽𝖾𝗅𝖾𝗍𝖾 𝗍𝗁𝖾 𝖿𝗂𝗅𝖾, 𝖿𝗂𝗅𝖾 𝗍𝗈 𝗌𝖺𝗏𝖾 𝗍𝗁𝖾 𝖿𝗂𝗅𝖾 & 𝖿𝗈𝗋 𝗇𝖾𝗐 𝖿𝗂𝗅𝖾 𝖼𝗋𝖾𝖺𝗍𝖾, 𝖿𝗈𝗅𝗅𝗈𝗐 𝖻𝖾𝗅𝗈𝗐 𝖿𝗈𝗋𝗆𝖺𝗍.</i> \n\n<b>𝖥𝗈𝗋𝗆𝖺𝗍:</b> \n𝖿𝗂𝗅𝖾_𝗇𝖺𝗆𝖾\n\n𝖼𝗈𝗇𝗍𝖾𝗇𝗍𝗌 𝗈𝖿 𝖿𝗂𝗅𝖾</i>\n\n<b>𝖳𝗂𝗆𝖾 𝖫𝖾𝖿𝗍 :</b> <code>60 𝗌𝖾𝖼</code>"
     elif key == "aria":
         for k in list(aria2_options.keys())[start : 10 + start]:
             if k not in ["checksum", "index-out", "out", "pause", "select-file"]:
                 buttons.data_button(k, f"botset ariavar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit aria")
+            buttons.data_button(SFMLStyle.CHANGE_BT, "botset edit aria")
         else:
-            buttons.data_button("View", "botset view aria")
-        buttons.data_button("Add new key", "botset ariavar newkey")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("𝖵𝗂𝖾𝗐", "botset view aria")
+        buttons.data_button("𝖠𝖽𝖽 𝗇𝖾𝗐 𝗄𝖾𝗒", "botset ariavar newkey")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset back")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(aria2_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start aria {x}", position="footer"
@@ -207,12 +201,12 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         for k in list(qbit_options.keys())[start : 10 + start]:
             buttons.data_button(k, f"botset qbitvar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit qbit")
+            buttons.data_button(SFMLStyle.CHANGE_BT, "botset edit qbit")
         else:
-            buttons.data_button("View", "botset view qbit")
-        buttons.data_button("Sync Qbittorrent", "botset syncqbit")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("𝖵𝗂𝖾𝗐", "botset view qbit")
+        buttons.data_button("𝖲𝗒𝗇𝖼 𝖰𝖻𝗂𝗍𝗍𝗈𝗋𝗋𝖾𝗇𝗍", "botset syncqbit")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset back")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(qbit_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start qbit {x}", position="footer"
@@ -222,13 +216,13 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         for k in list(nzb_options.keys())[start : 10 + start]:
             buttons.data_button(k, f"botset nzbvar {k}")
         if state == "view":
-            buttons.data_button("Edit", "botset edit nzb")
+            buttons.data_button(SFMLStyle.CHANGE_BT, "botset edit nzb")
         else:
-            buttons.data_button("View", "botset view nzb")
-        buttons.data_button("Servers", "botset nzbserver")
-        buttons.data_button("Sync Sabnzbd", "botset syncnzb")
-        buttons.data_button("Back", "botset back")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+            buttons.data_button("𝖵𝗂𝖾𝗐", "botset view nzb")
+        buttons.data_button("𝖲𝖾𝗋𝗏𝖾𝗋𝗌", "botset nzbserver")
+        buttons.data_button("𝖲𝗒𝗇𝖼 𝖲𝖺𝖻𝗇𝗓𝖻𝖽", "botset syncnzb")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset back")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
         for x in range(0, len(nzb_options), 10):
             buttons.data_button(
                 f"{int(x / 10)}", f"botset start nzb {x}", position="footer"
@@ -238,9 +232,9 @@ async def get_buttons(key=None, edit_type=None, edit_mode=False):
         if len(Config.USENET_SERVERS) > 0:
             for index, k in enumerate(Config.USENET_SERVERS[start : 10 + start]):
                 buttons.data_button(k["name"], f"botset nzbser{index}")
-        buttons.data_button("Add New", "botset nzbsevar newser")
-        buttons.data_button("Back", "botset nzb")
-        buttons.data_button("Close", "botset close", style=ButtonStyle.DANGER)
+        buttons.data_button("𝖠𝖽𝖽 𝖭𝖾𝗐", "botset nzbsevar newser")
+        buttons.data_button(SFMLStyle.BACK_BT, "botset nzb")
+        buttons.data_button(SFMLStyle.CLOSE_BT, "botset close", style=ButtonStyle.DANGER)
         if len(Config.USENET_SERVERS) > 10:
             for x in range(0, len(Config.USENET_SERVERS), 10):
                 buttons.data_button(

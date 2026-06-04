@@ -15,6 +15,7 @@ from ..core.jdownloader_booter import jdownloader
 from ..core.tg_client import TgClient
 from ..core.torrent_manager import TorrentManager
 from ..helper.ext_utils.bot_utils import new_task
+from ..helper.ext_utils.style import SFMLStyle
 from ..helper.ext_utils.db_handler import database
 from ..helper.ext_utils.files_utils import clean_all
 from ..helper.listeners.mega_listener import mega_cleanup
@@ -28,30 +29,30 @@ from ..helper.telegram_helper.message_utils import (
 @new_task
 async def restart_bot(_, message):
     buttons = button_build.ButtonMaker()
-    buttons.data_button("Yes!", "botrestart confirm")
-    buttons.data_button("No!", "botrestart cancel")
+    buttons.data_button(SFMLStyle.YES_BT, "botrestart confirm")
+    buttons.data_button(SFMLStyle.NO_BT, "botrestart cancel")
     button = buttons.build_menu(2)
     await send_message(
-        message, "<i>Are you really sure you want to restart the bot ?</i>", button
+        message, SFMLStyle.RESTART_CONFIRM, button
     )
 
 
 @new_task
 async def restart_sessions(_, message):
     buttons = button_build.ButtonMaker()
-    buttons.data_button("Yes!", "sessionrestart confirm")
-    buttons.data_button("No!", "sessionrestart cancel")
+    buttons.data_button(SFMLStyle.YES_BT, "sessionrestart confirm")
+    buttons.data_button(SFMLStyle.NO_BT, "sessionrestart cancel")
     button = buttons.build_menu(2)
     await send_message(
         message,
-        "<i>Are you really sure you want to restart the session(s) ?!</>",
+        SFMLStyle.SESSION_RESTART_CONFIRM,
         button,
     )
 
 
 async def send_incomplete_task_message(cid, msg_id, msg):
     try:
-        if msg.startswith("⌬ <b><i>Restarted Successfully!</i></b>"):
+        if msg.startswith("⌬ <b><i>"):
             await TgClient.bot.edit_message_text(
                 chat_id=cid,
                 message_id=msg_id,
@@ -82,11 +83,12 @@ async def restart_notification():
     if Config.INCOMPLETE_TASK_NOTIFIER and Config.DATABASE_URL:
         if notifier_dict := await database.get_incomplete_tasks():
             for cid, data in notifier_dict.items():
-                msg = f"""⌬ <b><i>{"Restarted Successfully!" if cid == chat_id else "Bot Restarted!"}</i></b>
-┟ <b>Date:</b> {now.strftime("%d/%m/%y")}
-┠ <b>Time:</b> {now.strftime("%I:%M:%S %p")}
-┠ <b>TimeZone:</b> Asia/Kolkata
-┖ <b>Version:</b> {get_version()}"""
+                msg = (SFMLStyle.RESTART_SUCCESS if cid == chat_id else SFMLStyle.RESTARTED).format(
+                    date=now.strftime("%d/%m/%y"),
+                    time=now.strftime("%I:%M:%S %p"),
+                    timz="𝖠𝗌𝗂𝖺/𝖪𝗈𝗅𝗄𝖺𝗍𝖺",
+                    version=get_version(),
+                )
                 for tag, links in data.items():
                     msg += f"\n\n{tag}: "
                     for index, link in enumerate(links, start=1):
@@ -102,11 +104,12 @@ async def restart_notification():
             await TgClient.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=msg_id,
-                text=f"""⌬ <b><i>Restarted Successfully!</i></b>
-┟ <b>Date:</b> {now.strftime("%d/%m/%y")}
-┠ <b>Time:</b> {now.strftime("%I:%M:%S %p")}
-┠ <b>TimeZone:</b> Asia/Kolkata
-┖ <b>Version:</b> {get_version()}""",
+                text=SFMLStyle.RESTART_SUCCESS.format(
+                    date=now.strftime("%d/%m/%y"),
+                    time=now.strftime("%I:%M:%S %p"),
+                    timz="𝖠𝗌𝗂𝖺/𝖪𝗈𝗅𝗄𝖺𝗍𝖺",
+                    version=get_version(),
+                ),
             )
         except Exception as e:
             LOGGER.error(e)
@@ -122,7 +125,7 @@ async def confirm_restart(_, query):
     await delete_message(message)
     if data[1] == "confirm":
         intervals["stopAll"] = True
-        restart_message = await send_message(reply_to, "<i>Restarting...</i>")
+        restart_message = await send_message(reply_to, SFMLStyle.RESTARTING)
         await delete_message(message)
         await TgClient.stop()
         if scheduler.running:
