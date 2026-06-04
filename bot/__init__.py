@@ -91,6 +91,7 @@ var_list = [
     "METADATA_ENCODER",
     "METADATA_SOURCE",
     "METADATA_STUDIO",
+    "TMDB_API_KEY",
 ]
 auth_chats = {}
 excluded_extensions = ["aria2", "!qB"]
