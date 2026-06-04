@@ -106,6 +106,12 @@ class Config:
     RSS_CHAT = ""
     RSS_DELAY = 600
     RSS_SIZE_LIMIT = 0
+    START_MESSAGE = ""
+    ABOUT_TEXT = ""
+    START_PIC = ""
+    ABOUT_PIC = ""
+    SETTINGS_PIC = ""
+    TASK_PIC = ""
     SEARCH_API_LINK = ""
     SEARCH_LIMIT = 0
     SEARCH_PLUGINS = []
