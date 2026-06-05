@@ -141,14 +141,17 @@ async def get_media_info(path, extra_info=False):
         )
     except Exception as e:
         LOGGER.error(f"Get Media Info: {e}. Mostly File not found! - File: {path}")
-        return (0, "", "", "") if extra_info else (0, None, None)
+        return (0, "", "", "", "") if extra_info else (0, None, None)
     if result[0] and result[2] == 0:
-        ffresult = eval(result[0])
+        ffresult = json.loads(result[0])
         fields = ffresult.get("format")
         if fields is None:
             LOGGER.error(f"get_media_info: {result}")
-            return (0, "", "", "") if extra_info else (0, None, None)
+            return (0, "", "", "", "") if extra_info else (0, None, None)
         duration = round(float(fields.get("duration", 0)))
+        tags = fields.get("tags", {})
+        artist = tags.get("artist") or tags.get("ARTIST") or tags.get("Artist")
+        title = tags.get("title") or tags.get("TITLE") or tags.get("Title")
         if extra_info:
             lang, qual, stitles = "", "", ""
             if (streams := ffresult.get("streams")) and streams[0].get(
@@ -171,12 +174,9 @@ async def get_media_info(path, extra_info=False):
                             st = Language.get(st).display_name()
                         if st not in stitles:
                             stitles += f"{st}, "
-            return duration, qual, lang[:-2], stitles[:-2]
-        tags = fields.get("tags", {})
-        artist = tags.get("artist") or tags.get("ARTIST") or tags.get("Artist")
-        title = tags.get("title") or tags.get("TITLE") or tags.get("Title")
+            return duration, qual, lang[:-2], stitles[:-2], title
         return duration, artist, title
-    return (0, "", "", "") if extra_info else (0, None, None)
+    return (0, "", "", "", "") if extra_info else (0, None, None)
 
 
 async def get_document_type(path):
@@ -215,7 +215,7 @@ async def get_document_type(path):
             is_video = True
         return is_video, is_audio, is_image
     if result[0] and result[2] == 0:
-        fields = eval(result[0]).get("streams")
+        fields = json.loads(result[0]).get("streams")
         if fields is None:
             LOGGER.error(f"get_document_type: {result}")
             return is_video, is_audio, is_image
