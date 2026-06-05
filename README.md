@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="docs/WZML-X.png" alt="WZML-X logo" width="420">
+   <img src="" alt="" width="420">
 </p>
 
 <h1 align="center">SFML</h1>
