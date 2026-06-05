@@ -2,14 +2,14 @@
    <img src="docs/WZML-X.png" alt="WZML-X logo" width="420">
 </p>
 
-<h1 align="center">WZML-X</h1>
+<h1 align="center">SFML</h1>
 
 <p align="center">
    Telegram mirroring and leeching platform with a container-based runtime, a lightweight web UI, and a configurable transfer pipeline.
 </p>
 
 <p align="center">
-   <a href="https://github.com/SilentDemonSD/WZML-X">
+   <a href="">
       <img src="https://img.shields.io/github/stars/SilentDemonSD/WZML-X?style=for-the-badge&logo=github&label=Stars" alt="Stars">
    </a>
 
