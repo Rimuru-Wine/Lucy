@@ -9,15 +9,15 @@
 </p>
 
 <p align="center">
-   <a href="">
-      <img src="https://img.shields.io/github/stars/SilentDemonSD/WZML-X?style=for-the-badge&logo=github&label=Stars" alt="Stars">
+   <a href="https://github.com/Soloflixbots/SFML">
+      <img src="https://img.shields.io/https://github.com/Soloflixbots/SFML?style=for-the-badge&logo=github&label=Stars" alt="Stars">
    </a>
 
-   <a href="https://github.com/SilentDemonSD/WZML-X/search?l=python">
-      <img src="https://img.shields.io/github/languages/top/SilentDemonSD/WZML-X?style=for-the-badge&logo=python&label=Python" alt="Python">
+   <a href="https://github.com/Soloflixbots/SFML/search?l=python">
+      <img src="https://img.shields.io/https://github.com/Soloflixbots/SFML?style=for-the-badge&logo=python&label=Python" alt="Python">
    </a>
 
-   <a href="https://github.com/SilentDemonSD/WZML-X/blob/main/docker-compose.yml">
+   <a href="https://github.com/Soloflixbots/SFML/blob/main/docker-compose.yml">
       <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose">
    </a>
 
