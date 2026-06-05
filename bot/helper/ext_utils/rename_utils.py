@@ -1,7 +1,8 @@
 import re
 from os import path as ospath
 from bot.helper.ext_utils.media_utils import get_media_info
-from bot import LOGGER
+from bot.helper.ext_utils.metadata_utils import MetadataProcessor
+from bot import LOGGER, user_data
 
 SEASON_EPISODE_PATTERNS = [
     # Standard patterns (S01E02, S01EP02)
@@ -29,12 +30,12 @@ QUALITY_PATTERNS = [
     (re.compile(r'\[(\d{3,4}[pi])\]', re.IGNORECASE), lambda m: m.group(1))  # [1080p]
 ]
 
-async def autorename_exec(path, format_str):
+async def autorename_exec(path, format_str, user_id=None):
     if not format_str:
         return path
 
-    filename = ospath.basename(path)
-    name, ext = ospath.splitext(filename)
+    orig_filename = ospath.basename(path)
+    name, ext = ospath.splitext(orig_filename)
 
     season = "N/A"
     episode = "N/A"
@@ -60,11 +61,18 @@ async def autorename_exec(path, format_str):
             break
 
     # Extract audio and quality from media info if not already found
-    duration, qual, lang, stitles = await get_media_info(path, extra_info=True)
+    duration, qual, lang, stitles, title = await get_media_info(path, extra_info=True)
     if lang:
         audio = lang
     if qual and quality == "N/A":
         quality = qual
+
+    if user_id:
+        user_dict = user_data.get(user_id, {})
+        title = user_dict.get('TITLE') or title
+
+    if not title:
+        title = "N/A"
 
     try:
         new_name = format_str.format(
@@ -72,7 +80,9 @@ async def autorename_exec(path, format_str):
             audio=audio,
             Season=season,
             episode=episode,
-            filename=name
+            filename=name,
+            basename=name,
+            title=title
         )
     except KeyError as e:
         LOGGER.error(f"Autorename Error: Missing key {e} in format string: {format_str}")
@@ -80,6 +90,8 @@ async def autorename_exec(path, format_str):
     except Exception as e:
         LOGGER.error(f"Autorename Error: {e}")
         return path
+
+    new_name = MetadataProcessor().sanitize(new_name)
 
     # Add extension back
     if not new_name.lower().endswith(ext.lower()):
