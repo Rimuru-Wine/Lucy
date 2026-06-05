@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 class SFMLStyle:
     # START/HELP/ABOUT
     ST_MSG = '''<b><blockquote>𝖧𝖾𝗒 {mention}!
