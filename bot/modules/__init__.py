@@ -37,7 +37,13 @@ from .services import start, start_cb, login, ping, log, log_cb
 from .shell import run_shell
 from .stats import bot_stats, stats_pages, get_packages_version
 from .status import task_status, status_pages
-from .users_settings import get_users_settings, edit_user_settings, send_user_settings
+from .users_settings import (
+    get_users_settings,
+    edit_user_settings,
+    send_user_settings,
+    set_title,
+    set_thumb,
+)
 from .ytdlp import ytdl, ytdl_leech
 from ..Jack.poster import (
     get_poster_menu,
@@ -112,6 +118,8 @@ __all__ = [
     "get_users_settings",
     "edit_user_settings",
     "send_user_settings",
+    "set_title",
+    "set_thumb",
     "ytdl",
     "ytdl_leech",
     "get_poster_menu",
