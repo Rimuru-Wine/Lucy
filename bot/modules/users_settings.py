@@ -1155,6 +1155,36 @@ async def update_user_settings(query, stype="main"):
 
 
 @new_task
+async def set_title(_, message):
+    user_id = message.from_user.id
+    handler_dict[user_id] = False
+    value = message.text.split(maxsplit=1)
+    if len(value) > 1:
+        value = value[1]
+        update_user_ldata(user_id, "TITLE", value)
+        await database.update_user_data(user_id)
+        await send_message(message, f"<b>Custom Title Set:</b> <code>{value}</code>")
+    else:
+        await send_message(message, "<b>Send Title with Command!</b>")
+
+
+@new_task
+async def set_thumb(_, message):
+    user_id = message.from_user.id
+    handler_dict[user_id] = False
+    reply_to = message.reply_to_message
+    if reply_to and (reply_to.photo or reply_to.document):
+        thumb_path = await create_thumb(reply_to, user_id)
+        update_user_ldata(user_id, "THUMBNAIL", thumb_path)
+        await database.update_user_doc(user_id, "THUMBNAIL", thumb_path)
+        await send_message(message, "<b>Custom Thumbnail Set!</b>")
+    else:
+        await send_message(
+            message, "<b>Reply to a photo or document to set it as Thumbnail!</b>"
+        )
+
+
+@new_task
 async def send_user_settings(_, message):
     from_user = message.from_user
     handler_dict[from_user.id] = False

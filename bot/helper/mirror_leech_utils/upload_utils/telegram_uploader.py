@@ -211,7 +211,7 @@ class TelegramUploader:
                 r"\{([^}]+)\}", lambda m: f"{{{m.group(1).lower()}}}", parts[0]
             )
             up_path = ospath.join(dirpath, pre_file_)
-            dur, qual, lang, subs = await get_media_info(up_path, True)
+            dur, qual, lang, subs, title = await get_media_info(up_path, True)
             cap_mono = parts[0].format(
                 filename=cap_file_,
                 size=get_readable_file_size(await aiopath.getsize(up_path)),

@@ -54,6 +54,8 @@ class BotCommands:
         "NzbSearch": ["nzbsearch", "ns"],
         "Plugins": "plugins",
         "Poster": ["poster", "p"],
+        "SetTitle": ["settitle", "tt"],
+        "SetThumb": ["setthumb", "t"],
     }
 
     @classmethod

@@ -913,7 +913,7 @@ class TaskConfig:
 
     async def proceed_autorename(self, dl_path):
         if self.is_file:
-            new_path = await autorename_exec(dl_path, self.autorename)
+            new_path = await autorename_exec(dl_path, self.autorename, self.user_id)
             if new_path != dl_path:
                 await move(dl_path, new_path)
                 return new_path
@@ -921,7 +921,9 @@ class TaskConfig:
             for dirpath, _, files in await sync_to_async(walk, dl_path, topdown=False):
                 for file_ in files:
                     f_path = ospath.join(dirpath, file_)
-                    new_path = await autorename_exec(f_path, self.autorename)
+                    new_path = await autorename_exec(
+                        f_path, self.autorename, self.user_id
+                    )
                     if new_path != f_path:
                         await move(f_path, new_path)
         return dl_path

@@ -67,6 +67,20 @@ def add_handlers():
     )
     TgClient.bot.add_handler(
         MessageHandler(
+            set_title,
+            filters=command(BotCommands.SetTitleCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            set_thumb,
+            filters=command(BotCommands.SetThumbCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
             cancel_all_buttons,
             filters=command(BotCommands.CancelAllCommand, case_sensitive=True)
             & CustomFilters.authorized,
