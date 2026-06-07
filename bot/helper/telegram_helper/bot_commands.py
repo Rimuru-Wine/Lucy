@@ -6,6 +6,12 @@ class BotCommands:
     StartCommand = "start"
     LoginCommand = "login"
     MyDramaListCommand = "mdl"
+    LeaderboardCommand = "leaderboard"
+    ProfileCommand = "profile"
+    Encode360Command = "encode360"
+    Encode480Command = "encode480"
+    Encode720Command = "encode720"
+    Encode1080Command = "encode1080"
 
     _static_commands = {
         "Mirror": ["mirror", "m"],
@@ -19,9 +25,12 @@ class BotCommands:
         "JdLeech": ["jdleech", "jl"],
         "YtdlLeech": ["ytdlleech", "yl"],
         "NzbLeech": ["nzbleech", "nl"],
+        "BatchLeech": ["bl"],
         "Clone": ["clone", "cl"],
         "Count": "count",
         "Delete": "del",
+        "Leaderboard": "leaderboard",
+        "Profile": "profile",
         "List": "list",
         "Search": "search",
         "Users": "users",
@@ -29,6 +38,7 @@ class BotCommands:
         "CancelAll": ["cancelall", "call"],
         "ForceStart": ["forcestart", "fs"],
         "Status": ["status", "s", "statusall"],
+        "Queue": ["queue", "q"],
         "MediaInfo": ["mediainfo", "mi"],
         "Ping": "ping",
         "Restart": ["restart", "r", "restartall"],
@@ -56,6 +66,10 @@ class BotCommands:
         "Poster": ["poster", "p"],
         "SetTitle": ["settitle", "tt"],
         "SetThumb": ["setthumb", "t"],
+        "Encode360": ["360p", "encode360"],
+        "Encode480": ["480p", "encode480"],
+        "Encode720": ["720p", "encode720"],
+        "Encode1080": ["1080p", "encode1080"],
     }
 
     @classmethod

@@ -440,6 +440,16 @@ async def edit_variable(_, message, pre_message, key):
                     "Invalid value! MIRROR_LOG_ID must be a valid integer chat ID.",
                 )
                 return await update_buttons(pre_message, "var")
+    elif key == "DUMP_CHAT_ID":
+        if value.strip():
+            try:
+                value = int(value.strip())
+            except ValueError:
+                await send_message(
+                    message,
+                    "Invalid value! DUMP_CHAT_ID must be a valid integer chat ID.",
+                )
+                return await update_buttons(pre_message, "var")
     elif key == "AUTHORIZED_CHATS":
         aid = value.split()
         auth_chats.clear()
@@ -456,9 +466,7 @@ async def edit_variable(_, message, pre_message, key):
         aid = value.split()
         for id_ in aid:
             sudo_users.append(int(id_.strip()))
-    elif key == "LOGIN_PASS":
-        value = str(value)
-    elif key == "DEBRID_LINK_API":
+    elif key in ["LOGIN_PASS", "DEBRID_LINK_API", "RESTART_TEXT"]:
         value = str(value)
     elif value.isdigit():
         value = int(value)

@@ -965,5 +965,6 @@ def add_job():
     )
 
 
-add_job()
-scheduler.start()
+def start_rss_scheduler():
+    add_job()
+    scheduler.start()

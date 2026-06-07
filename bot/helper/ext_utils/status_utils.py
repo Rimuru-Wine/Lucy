@@ -305,10 +305,6 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         if tasks_no > 30:
             for i in [1, 2, 4, 6, 8, 10, 15]:
                 buttons.data_button(i, f"status {sid} ps {i}", position="footer")
-    if status != "All" or tasks_no > 20:
-        for label, status_value in list(STATUSES.items()):
-            if status_value != status:
-                buttons.data_button(label, f"status {sid} st {status_value}")
     buttons.data_button(
         "♻️ 𝖱𝖾𝖿𝗋𝖾𝗌𝗁", f"status {sid} ref", position="header", style=ButtonStyle.PRIMARY
     )

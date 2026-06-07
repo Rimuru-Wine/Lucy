@@ -225,6 +225,7 @@ class SFMLStyle:
     PREVIOUS = '⫷'
     REFRESH = '𝖯𝖠𝖦𝖤𝖲\n{Page}'
     NEXT = '⫸'
+    QUEUE_TITLE = '⌬ <b><u>𝖰𝗎𝖾𝗎𝖾𝖽 𝖳𝖺𝗌𝗄𝗌</u></b> : {total}\n\n'
     NO_ACTIVE_DL = '''<i>𝖭𝗈 𝖠𝖼𝗍𝗂𝗏𝖾 𝖡𝗈𝗍 𝖳𝖺𝗌𝗄𝗌!</i>
 
 ⌬ <b><u>𝖡𝗈𝗍 𝖲𝗍𝖺𝗍𝗌</u></b>

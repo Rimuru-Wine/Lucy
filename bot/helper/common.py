@@ -913,7 +913,9 @@ class TaskConfig:
 
     async def proceed_autorename(self, dl_path):
         if self.is_file:
-            new_path = await autorename_exec(dl_path, self.autorename, self.user_id)
+            new_path = await autorename_exec(
+                dl_path, self.autorename, self.user_id
+            )
             if new_path != dl_path:
                 await move(dl_path, new_path)
                 return new_path

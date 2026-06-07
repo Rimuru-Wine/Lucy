@@ -1,5 +1,6 @@
 from psutil import cpu_percent, virtual_memory, disk_usage
 from time import time
+from html import escape
 from asyncio import gather, iscoroutinefunction
 
 from pyrogram.errors import QueryIdInvalid
@@ -34,6 +35,28 @@ from ..helper.telegram_helper.message_utils import (
     edit_message,
 )
 from ..helper.telegram_helper.button_build import ButtonMaker
+
+
+@new_task
+async def queue_status(_, message):
+    async with task_dict_lock:
+        queued_tasks = [
+            tk
+            for tk in task_dict.values()
+            if tk.status() in [MirrorStatus.STATUS_QUEUEDL, MirrorStatus.STATUS_QUEUEUP]
+        ]
+        count = len(queued_tasks)
+    if count == 0:
+        reply_message = await send_message(message, "No tasks in queue!")
+        await auto_delete_message(message, reply_message)
+        return
+    msg = SFMLStyle.QUEUE_TITLE.format(total=count)
+    for index, task in enumerate(queued_tasks, start=1):
+        msg += f"<b>{index}.</b> {escape(task.name())}\n"
+        msg += f"┠ <b>𝖲𝗂𝗓𝖾:</b> {task.size()}\n"
+        msg += f"┠ <b>𝖲𝗍𝖺𝗍𝗎𝗌:</b> {task.status()}\n"
+        msg += f"┖ <b>𝖡𝗒:</b> {task.listener.tag}\n\n"
+    await send_message(message, msg)
 
 
 @new_task

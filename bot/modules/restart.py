@@ -9,7 +9,14 @@ from pytz import timezone
 
 from bot.version import get_version
 
-from .. import LOGGER, intervals, sabnzbd_client, scheduler
+from .. import (
+    LOGGER,
+    auth_chats,
+    intervals,
+    sabnzbd_client,
+    scheduler,
+    sudo_users,
+)
 from ..core.config_manager import Config, BinConfig
 from ..core.jdownloader_booter import jdownloader
 from ..core.tg_client import TgClient
@@ -114,6 +121,28 @@ async def restart_notification():
         except Exception as e:
             LOGGER.error(e)
         await remove(".restartmsg")
+
+    if Config.RESTART_TEXT:
+        targets = set()
+        if Config.OWNER_ID:
+            targets.add(Config.OWNER_ID)
+        if sudo_users:
+            targets.update(sudo_users)
+        if auth_chats:
+            targets.update(auth_chats.keys())
+
+        for target in targets:
+            try:
+                msg = await TgClient.bot.send_message(
+                    chat_id=target, text=Config.RESTART_TEXT
+                )
+                if target < 0:
+                    try:
+                        await msg.pin(disable_notification=True)
+                    except Exception:
+                        pass
+            except Exception as e:
+                LOGGER.error(f"Failed to send restart text to {target}: {e}")
 
 
 @new_task

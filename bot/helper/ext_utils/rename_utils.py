@@ -1,5 +1,10 @@
 import re
 from os import path as ospath
+
+
+class SafeDict(dict):
+    def __missing__(self, key):
+        return "{" + key + "}"
 from bot.helper.ext_utils.media_utils import get_media_info
 from bot.helper.ext_utils.metadata_utils import MetadataProcessor
 from bot import LOGGER, user_data
@@ -22,12 +27,14 @@ SEASON_EPISODE_PATTERNS = [
 
 # Quality detection patterns
 QUALITY_PATTERNS = [
-    (re.compile(r'\b(\d{3,4}[pi])\b', re.IGNORECASE), lambda m: m.group(1)),  # 1080p, 720p
-    (re.compile(r'\b(4k|2160p)\b', re.IGNORECASE), lambda m: "4k"),
-    (re.compile(r'\b(2k|1440p)\b', re.IGNORECASE), lambda m: "2k"),
-    (re.compile(r'\b(HDRip|HDTV)\b', re.IGNORECASE), lambda m: m.group(1)),
-    (re.compile(r'\b(4kX264|4kx265)\b', re.IGNORECASE), lambda m: m.group(1)),
-    (re.compile(r'\[(\d{3,4}[pi])\]', re.IGNORECASE), lambda m: m.group(1))  # [1080p]
+    (re.compile(r"\b(\d{3,4}[pi])\b", re.IGNORECASE), lambda m: m.group(1)),
+    (re.compile(r"[([<{]?\s*(4k)\s*[)\]>}]?", re.IGNORECASE), lambda m: "4k"),
+    (re.compile(r"[([<{]?\s*(2k)\s*[)\]>}]?", re.IGNORECASE), lambda m: "2k"),
+    (re.compile(r"\bhd[-\s]?rip\b", re.IGNORECASE), lambda m: "HDRip"),
+    (re.compile(r"\b(HDTV)\b", re.IGNORECASE), lambda m: m.group(1)),
+    (re.compile(r"[([<{]?\s*(4kX264)\s*[)\]>}]?", re.IGNORECASE), lambda m: m.group(1)),
+    (re.compile(r"[([<{]?\s*(4kx265)\s*[)\]>}]?", re.IGNORECASE), lambda m: m.group(1)),
+    (re.compile(r"[_-]?\b(\d{3,4}[pi]|hdrip|4k|2160p)\b", re.IGNORECASE), lambda m: m.group(1)),
 ]
 
 async def autorename_exec(path, format_str, user_id=None):
@@ -75,18 +82,17 @@ async def autorename_exec(path, format_str, user_id=None):
         title = "N/A"
 
     try:
-        new_name = format_str.format(
-            quality=quality,
-            audio=audio,
-            season=season,
-            episode=episode,
-            filename=name,
-            basename=name,
-            title=title
+        new_name = format_str.format_map(
+            SafeDict(
+                quality=quality,
+                audio=audio,
+                season=season,
+                episode=episode,
+                filename=name,
+                basename=name,
+                title=title,
+            )
         )
-    except KeyError as e:
-        LOGGER.error(f"Autorename Error: Missing key {e} in format string: {format_str}")
-        return path
     except Exception as e:
         LOGGER.error(f"Autorename Error: {e}")
         return path

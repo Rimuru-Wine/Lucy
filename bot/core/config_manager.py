@@ -67,6 +67,8 @@ class Config:
     EXTRACT_LIMIT = 0
     ARCHIVE_LIMIT = 0
     STORAGE_LIMIT = 0
+    DUMP_CHAT_ID = ""
+    RESTART_TEXT = ""
     LEECH_DUMP_CHAT = ""
     LINKS_LOG_ID = ""
     MIRROR_LOG_ID = ""
@@ -105,6 +107,7 @@ class Config:
     QUEUE_ALL = 0
     QUEUE_DOWNLOAD = 0
     QUEUE_UPLOAD = 0
+    QUEUE_ENCODE = 1
     RCLONE_FLAGS = ""
     RCLONE_PATH = ""
     RCLONE_SERVE_URL = ""
@@ -138,6 +141,7 @@ class Config:
     VERIFY_TIMEOUT = 0
     LOGIN_PASS = ""
     TORRENT_TIMEOUT = 0
+    DEAD_TASK_TIMEOUT = 180
     TIMEZONE = "Asia/Kolkata"
     USER_MAX_TASKS = 0
     USER_TIME_INTERVAL = 0
