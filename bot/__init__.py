@@ -7,6 +7,10 @@ from asyncio import new_event_loop, set_event_loop
 bot_loop = new_event_loop()
 set_event_loop(bot_loop)
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+scheduler = AsyncIOScheduler(event_loop=bot_loop)
+
 from subprocess import run as srun
 from os import getcwd
 from asyncio import Lock
@@ -21,8 +25,6 @@ from logging import (
 )
 from os import cpu_count
 from time import time
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from .core.config_manager import BinConfig
 from sabnzbdapi import SabnzbdClient
@@ -63,6 +65,7 @@ qbit_options = {}
 nzb_options = {}
 queued_dl = {}
 queued_up = {}
+queued_en = {}
 status_dict = {}
 task_dict = {}
 rss_dict = {}
@@ -92,6 +95,8 @@ var_list = [
     "METADATA_SOURCE",
     "METADATA_STUDIO",
     "TMDB_API_KEY",
+    "DUMP_CHAT_ID",
+    "RESTART_TEXT",
 ]
 auth_chats = {}
 excluded_extensions = ["aria2", "!qB"]
@@ -101,6 +106,7 @@ index_urls = []
 sudo_users = []
 non_queued_dl = set()
 non_queued_up = set()
+non_queued_en = set()
 multi_tags = set()
 task_dict_lock = Lock()
 queue_dict_lock = Lock()
@@ -116,5 +122,3 @@ sabnzbd_client = SabnzbdClient(
     port="8070",
 )
 srun([BinConfig.QBIT_NAME, "-d", f"--profile={getcwd()}"], check=False)
-
-scheduler = AsyncIOScheduler(event_loop=bot_loop)

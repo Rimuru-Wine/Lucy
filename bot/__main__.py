@@ -10,7 +10,7 @@ from time import localtime
 
 from pytz import timezone
 
-from . import LOGGER, bot_loop
+from . import LOGGER, bot_loop, scheduler
 from .core.tg_client import TgClient
 
 
@@ -66,6 +66,8 @@ async def main():
         initiate_search_tools,
         restart_notification,
     )
+    from .modules.rss import start_rss_scheduler
+    from .helper.ext_utils.task_manager import dead_task_monitor
 
     await gather(
         save_settings(),
@@ -77,6 +79,8 @@ async def main():
         telegraph.create_account(),
         rclone_serve_booter(),
     )
+    start_rss_scheduler()
+    scheduler.add_job(dead_task_monitor, "interval", seconds=60)
 
 
 bot_loop.run_until_complete(main())
