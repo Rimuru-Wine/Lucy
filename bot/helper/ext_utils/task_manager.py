@@ -1,4 +1,4 @@
-from asyncio import Event
+from asyncio import Event, iscoroutinefunction
 from time import time
 
 from ... import (
@@ -6,9 +6,13 @@ from ... import (
     bot_cache,
     non_queued_dl,
     non_queued_up,
+    non_queued_en,
     queue_dict_lock,
+    task_dict,
+    task_dict_lock,
     queued_dl,
     queued_up,
+    queued_en,
     user_data,
 )
 from ...core.config_manager import Config
@@ -19,7 +23,74 @@ from .bot_utils import get_telegraph_list, sync_to_async, safe_int
 from .files_utils import get_base_name, check_storage_threshold
 from .style import SFMLStyle
 from .links_utils import is_gdrive_id
-from .status_utils import get_readable_time, get_readable_file_size, get_specific_tasks
+from .status_utils import get_readable_time, get_readable_file_size, get_specific_tasks, MirrorStatus
+from ..telegram_helper.message_utils import send_message
+
+__stalled_tasks = {}
+
+
+async def dead_task_monitor():
+    async with task_dict_lock:
+        tasks = list(task_dict.values())
+        current_mids = set(task_dict.keys())
+
+    for mid in list(__stalled_tasks.keys()):
+        if mid not in current_mids:
+            del __stalled_tasks[mid]
+
+    current_time = time()
+    for task in tasks:
+        mid = task.listener.mid
+        try:
+            st = (
+                await task.status()
+                if iscoroutinefunction(task.status)
+                else task.status()
+            )
+        except Exception:
+            continue
+
+        if st not in [MirrorStatus.STATUS_DOWNLOAD, MirrorStatus.STATUS_UPLOAD]:
+            if mid in __stalled_tasks:
+                del __stalled_tasks[mid]
+            continue
+
+        try:
+            processed = task.processed_bytes()
+        except Exception:
+            continue
+
+        if mid not in __stalled_tasks:
+            __stalled_tasks[mid] = {
+                "processed": processed,
+                "last_time": current_time,
+            }
+            continue
+
+        if processed != __stalled_tasks[mid]["processed"]:
+            __stalled_tasks[mid] = {
+                "processed": processed,
+                "last_time": current_time,
+            }
+        elif (
+            current_time - __stalled_tasks[mid]["last_time"]
+            >= Config.DEAD_TASK_TIMEOUT
+        ):
+            LOGGER.info(f"Dead Task Detected: {task.name()} ({mid})")
+            del __stalled_tasks[mid]
+
+            # Cancel task
+            if iscoroutinefunction(task.cancel_task):
+                await task.cancel_task()
+            else:
+                task.cancel_task()
+
+            # Notify user
+            if st == MirrorStatus.STATUS_DOWNLOAD:
+                msg = f"<b>Task:</b> <code>{task.name()}</code> has been cancelled due to {Config.DEAD_TASK_TIMEOUT // 60} minutes of inactivity.\n"
+                msg += "<b>Reason:</b> Dead torrent or dead link.\n\n"
+                msg += "Contact owner if it working but I can't leech it"
+                await send_message(task.listener.message, msg)
 
 
 async def stop_duplicate_check(listener):
@@ -62,16 +133,21 @@ async def stop_duplicate_check(listener):
 
 async def check_running_tasks(listener, state="dl"):
     all_limit = safe_int(Config.QUEUE_ALL)
-    state_limit = (
-        safe_int(Config.QUEUE_DOWNLOAD)
-        if state == "dl"
-        else safe_int(Config.QUEUE_UPLOAD)
-    )
+    if state == "dl":
+        state_limit = safe_int(Config.QUEUE_DOWNLOAD)
+    elif state == "up":
+        state_limit = safe_int(Config.QUEUE_UPLOAD)
+    else:
+        state_limit = safe_int(Config.QUEUE_ENCODE)
+
     event = None
     is_over_limit = False
     async with queue_dict_lock:
         if state == "up" and listener.mid in non_queued_dl:
             non_queued_dl.remove(listener.mid)
+        elif state == "en" and listener.mid in non_queued_dl:
+            non_queued_dl.remove(listener.mid)
+
         if (
             (all_limit or state_limit)
             and not listener.force_run
@@ -80,21 +156,32 @@ async def check_running_tasks(listener, state="dl"):
         ):
             dl_count = len(non_queued_dl)
             up_count = len(non_queued_up)
-            t_count = dl_count if state == "dl" else up_count
+            en_count = len(non_queued_en)
+            if state == "dl":
+                t_count = dl_count
+            elif state == "up":
+                t_count = up_count
+            else:
+                t_count = en_count
+
             is_over_limit = (
                 all_limit
-                and dl_count + up_count >= all_limit
+                and dl_count + up_count + en_count >= all_limit
                 and (not state_limit or t_count >= state_limit)
             ) or (state_limit and t_count >= state_limit)
             if is_over_limit:
                 event = Event()
                 if state == "dl":
                     queued_dl[listener.mid] = event
-                else:
+                elif state == "up":
                     queued_up[listener.mid] = event
+                else:
+                    queued_en[listener.mid] = event
         if not is_over_limit:
             if state == "up":
                 non_queued_up.add(listener.mid)
+            elif state == "en":
+                non_queued_en.add(listener.mid)
             else:
                 non_queued_dl.add(listener.mid)
 
@@ -113,28 +200,65 @@ async def start_up_from_queued(mid: int):
     non_queued_up.add(mid)
 
 
+async def start_en_from_queued(mid: int):
+    queued_en[mid].set()
+    del queued_en[mid]
+    non_queued_en.add(mid)
+
+
 async def start_from_queued():
     if all_limit := safe_int(Config.QUEUE_ALL):
         dl_limit = safe_int(Config.QUEUE_DOWNLOAD)
         up_limit = safe_int(Config.QUEUE_UPLOAD)
+        en_limit = safe_int(Config.QUEUE_ENCODE)
         async with queue_dict_lock:
             dl = len(non_queued_dl)
             up = len(non_queued_up)
-            all_ = dl + up
+            en = len(non_queued_en)
+            all_ = dl + up + en
             if all_ < all_limit:
                 f_tasks = all_limit - all_
-                if queued_up and (not up_limit or up < up_limit):
+                if queued_en and (not en_limit or en < en_limit):
+                    for index, mid in enumerate(list(queued_en.keys()), start=1):
+                        await start_en_from_queued(mid)
+                        f_tasks -= 1
+                        if f_tasks == 0 or (en_limit and index >= en_limit - en):
+                            break
+                if (
+                    queued_up
+                    and (not up_limit or up < up_limit)
+                    and f_tasks != 0
+                ):
                     for index, mid in enumerate(list(queued_up.keys()), start=1):
                         await start_up_from_queued(mid)
                         f_tasks -= 1
                         if f_tasks == 0 or (up_limit and index >= up_limit - up):
                             break
-                if queued_dl and (not dl_limit or dl < dl_limit) and f_tasks != 0:
+                if (
+                    queued_dl
+                    and (not dl_limit or dl < dl_limit)
+                    and f_tasks != 0
+                ):
                     for index, mid in enumerate(list(queued_dl.keys()), start=1):
                         await start_dl_from_queued(mid)
                         if (dl_limit and index >= dl_limit - dl) or index == f_tasks:
                             break
         return
+
+    if en_limit := Config.QUEUE_ENCODE:
+        async with queue_dict_lock:
+            en = len(non_queued_en)
+            if queued_en and en < en_limit:
+                f_tasks = en_limit - en
+                for index, mid in enumerate(list(queued_en.keys()), start=1):
+                    await start_en_from_queued(mid)
+                    if index == f_tasks:
+                        break
+    else:
+        async with queue_dict_lock:
+            if queued_en:
+                for mid in list(queued_en.keys()):
+                    await start_en_from_queued(mid)
 
     if up_limit := Config.QUEUE_UPLOAD:
         async with queue_dict_lock:
