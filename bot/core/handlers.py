@@ -7,6 +7,7 @@ from ..helper.ext_utils.help_messages import BOT_COMMANDS
 from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.filters import CustomFilters
 from ..modules import *
+from ..modules.status import queue_status
 from .tg_client import TgClient
 
 
@@ -60,8 +61,66 @@ def add_handlers():
     )
     TgClient.bot.add_handler(
         MessageHandler(
+            profile,
+            filters=command(BotCommands.ProfileCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            encode_360p,
+            filters=command(BotCommands.Encode360Command, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            encode_480p,
+            filters=command(BotCommands.Encode480Command, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            encode_720p,
+            filters=command(BotCommands.Encode720Command, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            encode_1080p,
+            filters=command(BotCommands.Encode1080Command, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            leaderboard,
+            filters=command(BotCommands.LeaderboardCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
             cancel,
             filters=regex(rf"^/{BotCommands.CancelTaskCommand[1]}?(?:_\w+).*$")
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            queue_status,
+            filters=command(BotCommands.QueueCommand, case_sensitive=True)
+            & CustomFilters.authorized,
+        )
+    )
+    TgClient.bot.add_handler(
+        MessageHandler(
+            batch_leech,
+            filters=command(
+                BotCommands.BatchLeechCommand, prefixes=["/", "."], case_sensitive=True
+            )
             & CustomFilters.authorized,
         )
     )
