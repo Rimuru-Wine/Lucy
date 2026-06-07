@@ -136,11 +136,12 @@ async def start_cb(_, query):
             mention=query.from_user.mention
         )
         buttons = ButtonMaker()
-        buttons.data_button(SFMLStyle.BACK_BT, "start back")
+        buttons.data_button("🏠 Home", "start back")
+        buttons.data_button("🗑️ Cancel", "start close", style=ButtonStyle.DANGER)
         await edit_message(
             query.message,
             msg,
-            buttons.build_menu(1),
+            buttons.build_menu(2),
             photo=Config.ABOUT_PIC or Config.START_PIC,
         )
     elif data[1] == "back":

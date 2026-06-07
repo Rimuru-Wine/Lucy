@@ -1,14 +1,18 @@
+from asyncio import sleep
 from base64 import b64encode
-from re import match as re_match
+from os import path as ospath
+from re import findall, match as re_match, search as re_search, S
 
 from aiofiles.os import path as aiopath
 from bot.core.config_manager import Config
 
 from .. import DOWNLOAD_DIR, LOGGER, bot_loop, task_dict_lock
+from ..core.tg_client import TgClient
 from ..helper.ext_utils.bot_utils import (
     COMMAND_USAGE,
     arg_parser,
     get_content_type,
+    new_task,
     sync_to_async,
 )
 from ..helper.ext_utils.exceptions import DirectDownloadLinkException
@@ -43,6 +47,7 @@ from ..helper.mirror_leech_utils.download_utils.rclone_download import (
 from ..helper.mirror_leech_utils.download_utils.telegram_download import (
     TelegramDownloadHelper,
 )
+from ..helper.telegram_helper.bot_commands import BotCommands
 from ..helper.telegram_helper.message_utils import (
     auto_delete_message,
     delete_links,
@@ -83,6 +88,8 @@ class Mirror(TaskListener):
         self.is_jd = is_jd
         self.is_nzb = is_nzb
         self.is_uphoster = is_uphoster
+        if "ffmpeg_cmds" in kwargs:
+            self.ffmpeg_cmds = kwargs["ffmpeg_cmds"]
 
     async def new_event(self):
         text = self.message.text.split("\n")
@@ -210,15 +217,14 @@ class Mirror(TaskListener):
         except Exception:
             self.multi = 0
 
-        try:
-            if args["-ff"]:
+        if args["-ff"]:
+            try:
                 if isinstance(args["-ff"], set):
                     self.ffmpeg_cmds = args["-ff"]
                 else:
                     self.ffmpeg_cmds = eval(args["-ff"])
-        except Exception as e:
-            self.ffmpeg_cmds = None
-            LOGGER.error(e)
+            except Exception as e:
+                LOGGER.error(e)
 
         if not isinstance(self.seed, bool):
             dargs = self.seed.split(":")
@@ -512,3 +518,35 @@ async def nzb_leech(client, message):
 
 async def uphoster(client, message):
     bot_loop.create_task(Mirror(client, message, is_uphoster=True).new_event())
+
+
+@new_task
+async def batch_leech(client, message):
+    if Config.DISABLE_LEECH:
+        await message.reply("The Leech command is currently disabled.")
+        return
+
+    if not (reply_to := message.reply_to_message):
+        await send_message(message, "Reply to a message containing links!")
+        return
+
+    if not (text := reply_to.text or reply_to.caption):
+        await send_message(message, "No text found in replied message!")
+        return
+
+    found = findall(r"(https?://\S+)(.*?)(?=https?://|$)", text, S)
+    if not found:
+        await send_message(message, "No links found!")
+        return
+
+    for link, args in found:
+        link = link.strip()
+        args = args.strip()
+        t = f"/{BotCommands.LeechCommand[0]} {link} {args}"
+        msg = await send_message(message, t)
+        if isinstance(msg, str):
+            continue
+        msg.from_user = message.from_user
+        msg.sender_chat = message.sender_chat
+        bot_loop.create_task(Mirror(client, msg, is_leech=True).new_event())
+        await sleep(2)

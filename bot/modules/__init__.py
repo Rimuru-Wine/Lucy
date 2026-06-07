@@ -9,6 +9,7 @@ from .gd_count import count_node
 from .gd_delete import delete_file
 from .gd_search import gdrive_search, select_type
 from .help import arg_usage, bot_help
+from .leaderboard import profile, leaderboard
 from .mediainfo import mediainfo
 from .broadcast import broadcast
 from .mirror_leech import (
@@ -21,6 +22,7 @@ from .mirror_leech import (
     nzb_leech,
     nzb_mirror,
     uphoster,
+    batch_leech,
 )
 from .restart import (
     restart_bot,
@@ -36,7 +38,7 @@ from .nzb_search import hydra_search
 from .services import start, start_cb, login, ping, log, log_cb
 from .shell import run_shell
 from .stats import bot_stats, stats_pages, get_packages_version
-from .status import task_status, status_pages
+from .status import task_status, status_pages, queue_status
 from .users_settings import (
     get_users_settings,
     edit_user_settings,
@@ -45,6 +47,7 @@ from .users_settings import (
     set_thumb,
 )
 from .ytdlp import ytdl, ytdl_leech
+from .encode import encode_360p, encode_480p, encode_720p, encode_1080p
 from ..Jack.poster import (
     get_poster_menu,
     handle_back_to_search,
@@ -78,7 +81,10 @@ __all__ = [
     "gdrive_search",
     "select_type",
     "arg_usage",
+    "profile",
+    "leaderboard",
     "uphoster",
+    "batch_leech",
     "mirror",
     "leech",
     "qb_leech",
@@ -115,6 +121,7 @@ __all__ = [
     "get_packages_version",
     "task_status",
     "status_pages",
+    "queue_status",
     "get_users_settings",
     "edit_user_settings",
     "send_user_settings",
@@ -122,6 +129,10 @@ __all__ = [
     "set_thumb",
     "ytdl",
     "ytdl_leech",
+    "encode_360p",
+    "encode_480p",
+    "encode_720p",
+    "encode_1080p",
     "get_poster_menu",
     "handle_back_to_search",
     "show_poster_categories",
