@@ -529,7 +529,35 @@ class TaskListener(TaskConfig):
             await send_message(self.message, user_message, button)
 
         elif self.is_leech:
-            pass
+            msg += SFMLStyle.L_TOTAL_FILES.format(Files=folders)
+            if isinstance(mime_type, int) and mime_type > 0:
+                msg += SFMLStyle.L_CORRUPTED_FILES.format(Corrupt=mime_type)
+            msg += SFMLStyle.L_CC.format(Tag=self.tag)
+
+            buttons = ButtonMaker()
+            if self.bot_pm and self.is_super_chat:
+                buttons.url_button(
+                    SFMLStyle.CHECK_PM,
+                    f"https://t.me/{TgClient.BNAME}",
+                    style=ButtonStyle.PRIMARY,
+                )
+            button = (
+                buttons.build_menu(1) if self.bot_pm and self.is_super_chat else None
+            )
+
+            group_msg = (
+                msg
+                + f"〶 {SFMLStyle.ACTION_BT} :\n"
+                + f"⋗ {SFMLStyle.L_BOT_MSG if self.bot_pm and self.is_super_chat else SFMLStyle.PM_BOT_MSG}\n\n"
+            )
+
+            if self.bot_pm and self.is_super_chat:
+                await send_message(self.user_id, msg, photo=Config.TASK_PIC)
+
+            if Config.LEECH_DUMP_CHAT:
+                await send_message(int(Config.LEECH_DUMP_CHAT), msg)
+
+            await send_message(self.message, group_msg, button)
         else:
             msg += SFMLStyle.M_TYPE.format(Mimetype=mime_type)
             if mime_type == "Folder":
@@ -552,6 +580,7 @@ class TaskListener(TaskConfig):
                 multi_link_msg = multi_link_msg.strip()
                 link = None  # Disable single link button logic
 
+            buttons = ButtonMaker()
             if (
                 link
                 or rclone_path
@@ -559,7 +588,6 @@ class TaskListener(TaskConfig):
                 and not self.private_link
                 or multi_links
             ):
-                buttons = ButtonMaker()
                 if link and Config.SHOW_CLOUD_LINK:
                     buttons.url_button(SFMLStyle.CLOUD_LINK, link, style=ButtonStyle.PRIMARY)
                 elif multi_links:
@@ -595,15 +623,21 @@ class TaskListener(TaskConfig):
                             buttons.url_button(
                                 SFMLStyle.VIEW_LINK, share_urls, style=ButtonStyle.PRIMARY
                             )
-                button = buttons.build_menu(2)
             else:
                 if not multi_link_msg:
                     msg += SFMLStyle.RCPATH.format(RCpath=rclone_path)
-                button = None
+
+            if self.bot_pm and self.is_super_chat:
+                buttons.url_button(
+                    SFMLStyle.CHECK_PM,
+                    f"https://t.me/{TgClient.BNAME}",
+                    style=ButtonStyle.PRIMARY,
+                )
+            button = buttons.build_menu(2) if any(buttons.buttons.values()) else None
             msg += SFMLStyle.M_CC.format(Tag=self.tag)
             group_msg = (
-                msg + f"〶 <b><u>{SFMLStyle.ACTION_BT} :</u></b>\n"
-                f"⋗ <i>{SFMLStyle.M_BOT_MSG}</i>\n\n"
+                msg + f"〶 {SFMLStyle.ACTION_BT} :\n"
+                f"⋗ {SFMLStyle.M_BOT_MSG}\n\n"
             )
 
             if multi_link_msg:
