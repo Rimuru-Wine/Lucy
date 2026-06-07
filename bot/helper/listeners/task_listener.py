@@ -16,11 +16,14 @@ from ... import (
     LOGGER,
     non_queued_up,
     non_queued_dl,
+    non_queued_en,
     queued_up,
     queued_dl,
+    queued_en,
     queue_dict_lock,
     same_directory_lock,
     DOWNLOAD_DIR,
+    user_data,
 )
 from ...modules.metadata import apply_metadata_title
 from ..common import TaskConfig
@@ -127,6 +130,10 @@ class TaskListener(TaskConfig):
         await sleep(2)
         if self.is_cancelled:
             return
+        async with queue_dict_lock:
+            if self.mid in non_queued_dl:
+                non_queued_dl.remove(self.mid)
+        await start_from_queued()
         multi_links = False
         if (
             self.folder_name
@@ -207,12 +214,6 @@ class TaskListener(TaskConfig):
 
         await remove_excluded_files(self.up_dir or self.dir, self.excluded_extensions)
 
-        if not Config.QUEUE_ALL:
-            async with queue_dict_lock:
-                if self.mid in non_queued_dl:
-                    non_queued_dl.remove(self.mid)
-            await start_from_queued()
-
         if self.join and not self.is_file:
             await join_files(up_path)
 
@@ -235,6 +236,18 @@ class TaskListener(TaskConfig):
             self.clear()
             await remove_excluded_files(up_dir, self.excluded_extensions)
 
+        if self.ffmpeg_cmds or self.convert_audio or self.convert_video or self.sample_video:
+            add_to_queue, event = await check_running_tasks(self, "en")
+            await start_from_queued()
+            if add_to_queue:
+                LOGGER.info(f"Added to Queue/Encode: {self.name}")
+                async with task_dict_lock:
+                    task_dict[self.mid] = QueueStatus(self, gid, "En")
+                await event.wait()
+                if self.is_cancelled:
+                    return
+                LOGGER.info(f"Start from Queued/Encode: {self.name}")
+
         if self.ffmpeg_cmds:
             up_path = await self.proceed_ffmpeg(
                 up_path,
@@ -246,6 +259,12 @@ class TaskListener(TaskConfig):
             self.name = up_path.replace(f"{up_dir}/", "").split("/", 1)[0]
             self.size = await get_path_size(up_dir)
             self.clear()
+
+        if (self.ffmpeg_cmds or self.convert_audio or self.convert_video or self.sample_video):
+            async with queue_dict_lock:
+                if self.mid in non_queued_en:
+                    non_queued_en.remove(self.mid)
+            await start_from_queued()
 
         if (
             (hasattr(self, "metadata_dict") and self.metadata_dict)
@@ -402,18 +421,84 @@ class TaskListener(TaskConfig):
     async def on_upload_complete(
         self, link, files, folders, mime_type, rclone_path="", dir_id=""
     ):
+        async with queue_dict_lock:
+            if self.mid in non_queued_up:
+                non_queued_up.remove(self.mid)
+        await start_from_queued()
+
         if (
             self.is_super_chat
             and Config.INCOMPLETE_TASK_NOTIFIER
             and Config.DATABASE_URL
         ):
             await database.rm_complete_task(self.message.link)
+
+        user_data.setdefault(self.user_id, {})
+        user_data[self.user_id]["TOTAL_TASKS"] = (
+            user_data[self.user_id].get("TOTAL_TASKS", 0) + 1
+        )
+        if self.is_leech:
+            user_data[self.user_id]["TOTAL_LEECH"] = (
+                user_data[self.user_id].get("TOTAL_LEECH", 0) + 1
+            )
+        else:
+            user_data[self.user_id]["TOTAL_MIRROR"] = (
+                user_data[self.user_id].get("TOTAL_MIRROR", 0) + 1
+            )
+        user_data[self.user_id]["NAME"] = (
+            self.message.from_user.first_name
+            if self.message.from_user
+            else self.message.sender_chat.title
+        )
+        if Config.DATABASE_URL:
+            await database.update_user_data(self.user_id)
+
         msg = SFMLStyle.NAME.format(Name=escape(self.name))
         msg += SFMLStyle.SIZE.format(Size=get_readable_file_size(self.size))
         msg += SFMLStyle.ELAPSE.format(
             Time=get_readable_time(time() - self.message.date.timestamp())
         )
         msg += SFMLStyle.MODE.format(Mode=f"{self.mode[0]} ➜ {self.mode[1]}")
+
+        if Config.DUMP_CHAT_ID:
+            dump_msg = msg + f"\n<b>Task By: </b>{self.tag}"
+            buttons = ButtonMaker()
+            if self.is_leech:
+                if isinstance(files, dict):
+                    for k, v in files.items():
+                        if isinstance(k, str) and k.startswith("http"):
+                            url, name = k, v
+                        else:
+                            name, url = k, v
+                        buttons.url_button(name, url)
+            else:
+                if isinstance(link, dict) and not self.is_yt:
+                    for service, result in link.items():
+                        if result.get("link"):
+                            buttons.url_button(
+                                f"{service.capitalize()} Link", result["link"]
+                            )
+                elif link:
+                    buttons.url_button(SFMLStyle.CLOUD_LINK, link)
+
+                if rclone_path and Config.RCLONE_SERVE_URL and not self.private_link:
+                    remote, rpath = rclone_path.split(":", 1)
+                    url_path = rutils.quote(f"{rpath}")
+                    share_url = f"{Config.RCLONE_SERVE_URL}/{remote}/{url_path}"
+                    if mime_type == "Folder":
+                        share_url += "/"
+                    buttons.url_button(SFMLStyle.RCLONE_LINK, share_url)
+
+            dump_button = buttons.build_menu(2)
+            try:
+                dump_id = (
+                    int(Config.DUMP_CHAT_ID)
+                    if str(Config.DUMP_CHAT_ID).lstrip("-").isdigit()
+                    else Config.DUMP_CHAT_ID
+                )
+                await send_message(dump_id, dump_msg, dump_button)
+            except Exception as e:
+                LOGGER.error(f"Failed to send completion message to dump chat: {e}")
 
         LOGGER.info(f"Task Done: {self.name}")
         if self.is_yt:
@@ -444,41 +529,7 @@ class TaskListener(TaskConfig):
             await send_message(self.message, user_message, button)
 
         elif self.is_leech:
-            msg += SFMLStyle.L_TOTAL_FILES.format(Files=folders)
-            if mime_type != 0:
-                msg += SFMLStyle.L_CORRUPTED_FILES.format(Corrupt=mime_type)
-            msg += SFMLStyle.L_CC.format(Tag=self.tag)
-
-            if self.bot_pm:
-                pmsg = msg
-                pmsg += f"〶 <b><u>{SFMLStyle.ACTION_BT} :</u></b>\n"
-                pmsg += f"⋗ <i>{SFMLStyle.L_BOT_MSG}</i>\n\n"
-                if self.is_super_chat:
-                    await send_message(self.message, pmsg)
-
-            if not files and not self.is_super_chat:
-                await send_message(self.message, msg)
-            else:
-                log_chat = self.user_id if self.bot_pm else self.message
-                msg += "〶 <b><u>Files List :</u></b>\n"
-                fmsg = ""
-                for index, (link, name) in enumerate(files.items(), start=1):
-                    chat_id, msg_id = link.split("/")[-2:]
-                    fmsg += f"{index}. <a href='{link}'>{name}</a>"
-                    if Config.MEDIA_STORE and (
-                        self.is_super_chat or Config.LEECH_DUMP_CHAT
-                    ):
-                        if chat_id.isdigit():
-                            chat_id = f"-100{chat_id}"
-                        flink = f"https://t.me/{TgClient.BNAME}?start={encode_slink('file' + chat_id + '&&' + msg_id)}"
-                        fmsg += f"\n┖ <b>Get Media</b> → <a href='{flink}'>Store Link</a> | <a href='https://t.me/share/url?url={flink}'>Share Link</a>"
-                    fmsg += "\n"
-                    if len(fmsg.encode() + msg.encode()) > 4000:
-                        await send_message(log_chat, msg + fmsg)
-                        await sleep(1)
-                        fmsg = ""
-                if fmsg != "":
-                    await send_message(log_chat, msg + fmsg)
+            pass
         else:
             msg += SFMLStyle.M_TYPE.format(Mimetype=mime_type)
             if mime_type == "Folder":
@@ -587,13 +638,14 @@ class TaskListener(TaskConfig):
         else:
             await update_status_message(self.message.chat.id)
 
-        async with queue_dict_lock:
-            if self.mid in non_queued_up:
-                non_queued_up.remove(self.mid)
-
-        await start_from_queued()
+        pass
 
     async def on_download_error(self, error, button=None, is_limit=False):
+        async with queue_dict_lock:
+            if self.mid in non_queued_dl:
+                non_queued_dl.remove(self.mid)
+        await start_from_queued()
+
         async with task_dict_lock:
             if self.mid in task_dict:
                 del task_dict[self.mid]
@@ -637,10 +689,15 @@ class TaskListener(TaskConfig):
             if self.mid in queued_up:
                 queued_up[self.mid].set()
                 del queued_up[self.mid]
+            if self.mid in queued_en:
+                queued_en[self.mid].set()
+                del queued_en[self.mid]
             if self.mid in non_queued_dl:
                 non_queued_dl.remove(self.mid)
             if self.mid in non_queued_up:
                 non_queued_up.remove(self.mid)
+            if self.mid in non_queued_en:
+                non_queued_en.remove(self.mid)
 
         await start_from_queued()
         await sleep(3)
@@ -651,6 +708,11 @@ class TaskListener(TaskConfig):
             await remove(self.thumb)
 
     async def on_upload_error(self, error):
+        async with queue_dict_lock:
+            if self.mid in non_queued_up:
+                non_queued_up.remove(self.mid)
+        await start_from_queued()
+
         async with task_dict_lock:
             if self.mid in task_dict:
                 del task_dict[self.mid]
@@ -675,10 +737,15 @@ class TaskListener(TaskConfig):
             if self.mid in queued_up:
                 queued_up[self.mid].set()
                 del queued_up[self.mid]
+            if self.mid in queued_en:
+                queued_en[self.mid].set()
+                del queued_en[self.mid]
             if self.mid in non_queued_dl:
                 non_queued_dl.remove(self.mid)
             if self.mid in non_queued_up:
                 non_queued_up.remove(self.mid)
+            if self.mid in non_queued_en:
+                non_queued_en.remove(self.mid)
 
         await start_from_queued()
         await sleep(3)
