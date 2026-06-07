@@ -154,26 +154,26 @@ class SFMLStyle:
     PM_START =            "➲ <b><u>𝖳𝖺𝗌𝗄 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 :</u></b>\n┃\n┖ <b>𝖫𝗂𝗇𝗄:</b> <a href='{msg_link}'>𝖢𝗅𝗂𝖼𝗄 𝖧𝖾𝗋𝖾</a>"
     L_LOG_START =           "➲ <b><u>𝖫𝖾𝖾𝖼𝗁 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 :</u></b>\n┃\n┠ <b>𝖴𝗌𝖾𝗋 :</b> {mention} ( #ID{uid} )\n┖ <b>𝖲𝗈𝗎𝗋𝖼𝖾 :</b> <a href='{msg_link}'>𝖢𝗅𝗂𝖼𝗄 𝖧𝖾𝗋𝖾</a>"
 
-    NAME =                  '<b><i>{Name}</i></b>\n┃\n'
-    SIZE =                  '┠ <b>𝖲𝗂𝗓𝖾: </b>{Size}\n'
-    ELAPSE =                '┠ <b>𝖤𝗅𝖺𝗉𝗌𝖾𝖽: </b>{Time}\n'
-    MODE =                  '┠ <b>𝖬𝗈𝖽𝖾: </b>{Mode}\n'
+    NAME =                  '{Name}\n┃\n'
+    SIZE =                  '┠ 𝖲𝗂𝗓𝖾: {Size}\n'
+    ELAPSE =                '┠ 𝖤𝗅𝖺𝗉𝗌𝖾𝖽: {Time}\n'
+    MODE =                  '┠ 𝖬𝗈𝖽𝖾: {Mode}\n'
 
     # ----- LEECH -------
-    L_TOTAL_FILES =         '┠ <b>𝖳𝗈𝗍𝖺𝗅 𝖥𝗂𝗅𝖾𝗌: </b>{Files}\n'
-    L_CORRUPTED_FILES =     '┠ <b>𝖢𝗈𝗋𝗋𝗎𝗉𝗍𝖾𝖽 𝖥𝗂𝗅𝖾𝗌: </b>{Corrupt}\n'
-    L_CC =                  '┖ <b>𝖡𝗒: </b>{Tag}\n\n'
-    PM_BOT_MSG =            '➲ <b><i>𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝖺𝖻𝗈𝗏𝖾</i></b>'
-    L_BOT_MSG =             '➲ <b><i>𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝗍𝗈 𝖡𝗈𝗍 𝖯𝖬 (𝖯𝗋𝗂𝗏𝖺𝗍𝖾)</i></b>'
-    L_LL_MSG =              '➲ <b><i>𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍. 𝖠𝖼𝖼𝖾𝗌𝗌 𝗏𝗂𝖺 𝖫𝗂𝗇𝗄𝗌...</i></b>\n'
+    L_TOTAL_FILES =         '┠ 𝖳𝗈𝗍𝖺𝗅 𝖥𝗂𝗅𝖾𝗌: {Files}\n'
+    L_CORRUPTED_FILES =     '┠ 𝖢𝗈𝗋𝗋𝗎𝗉𝗍𝖾𝖽 𝖥𝗂𝗅𝖾𝗌: {Corrupt}\n'
+    L_CC =                  '┖ 𝖡𝗒: {Tag}\n\n'
+    PM_BOT_MSG =            '➲ 𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝖺𝖻𝗈𝗏𝖾'
+    L_BOT_MSG =             '➲ 𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝗍𝗈 𝖡𝗈𝗍 𝖯𝖬 (𝖯𝗋𝗂𝗏𝖺𝗍𝖾)'
+    L_LL_MSG =              '➲ 𝖥𝗂𝗅𝖾(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍. 𝖠𝖼𝖼𝖾𝗌𝗌 𝗏𝗂𝖺 𝖫𝗂𝗇𝗄𝗌...\n'
 
     # ----- MIRROR -------
-    M_TYPE =                '┠ <b>𝖳𝗒𝗉𝖾: </b>{Mimetype}\n'
-    M_SUBFOLD =             '┠ <b>𝖲𝗎𝖻𝖥𝗈𝗅𝖽𝖾𝗋𝗌: </b>{Folder}\n'
-    TOTAL_FILES =           '┠ <b>𝖥𝗂𝗅𝖾𝗌: </b>{Files}\n'
-    RCPATH =                '┠ <b>𝖯𝖺𝗍𝗁: </b><code>{RCpath}</code>\n'
-    M_CC =                  '┖ <b>𝖡𝗒: </b>{Tag}\n\n'
-    M_BOT_MSG =             '➲ <b><i>𝖫𝗂𝗇𝗄(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝗍𝗈 𝖡𝗈𝗍 𝖯𝖬 (𝖯𝗋𝗂𝗏𝖺𝗍𝖾)</i></b>'
+    M_TYPE =                '┠ 𝖳𝗒𝗉𝖾: {Mimetype}\n'
+    M_SUBFOLD =             '┠ 𝖲𝗎𝖻𝖥𝗈𝗅𝖽𝖾𝗋𝗌: {Folder}\n'
+    TOTAL_FILES =           '┠ 𝖥𝗂𝗅𝖾𝗌: {Files}\n'
+    RCPATH =                '┠ 𝖯𝖺𝗍𝗁: <code>{RCpath}</code>\n'
+    M_CC =                  '┖ 𝖡𝗒: {Tag}\n\n'
+    M_BOT_MSG =             '➲ 𝖫𝗂𝗇𝗄(𝗌) 𝗁𝖺𝗏𝖾 𝖻𝖾𝖾𝗇 𝖲𝖾𝗇𝗍 𝗍𝗈 𝖡𝗈𝗍 𝖯𝖬 (𝖯𝗋𝗂𝗏𝖺𝗍𝖾)'
 
     # ----- BUTTONS -------
     CLOUD_LINK =      '☁️ 𝖢𝗅𝗈𝗎𝖽 𝖫𝗂𝗇𝗄'
